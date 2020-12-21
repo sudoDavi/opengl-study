@@ -2,9 +2,15 @@
 #include <GLFW/glfw3.h>
 
 #include <iostream>
+#include <cstdlib>
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
+}
+
+void processInput(GLFWwindow *window) {
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
 }
 
 int main() {
@@ -32,6 +38,15 @@ int main() {
 	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
 	while (!glfwWindowShouldClose(window)) {
+		processInput(window);
+
+		glClearColor(static_cast<float>(rand()) / RAND_MAX, 
+			static_cast<float>(rand()) / RAND_MAX,
+			static_cast<float>(rand()) / RAND_MAX,
+			1.0f
+		);
+		glClear(GL_COLOR_BUFFER_BIT);
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
