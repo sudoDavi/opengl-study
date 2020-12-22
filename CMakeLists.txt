@@ -11,6 +11,7 @@ add_subdirectory(glad)
 set(
 	TUTORIALS
 	"window"
+	"triangle"
 )
 
 set(CMAKE_CXX_STANDARD 17)
