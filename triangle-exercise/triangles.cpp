@@ -62,7 +62,7 @@ int main() {
 	// Added for Mac OS X
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-	GLFWwindow* window{ glfwCreateWindow(800, 600, "LearnOpenGL - Hello Rectangle", nullptr, nullptr) };
+	GLFWwindow* window{ glfwCreateWindow(800, 600, "LearnOpenGL - Triangle Exercises", nullptr, nullptr) };
 	if (window == nullptr) {
 		std::cout << "Failed to create GLFW window\n" ;
 		glfwTerminate();
@@ -83,31 +83,44 @@ int main() {
 	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
 	// Rectangle vertices for the vertex shader (should probably create a vert struct later)
-	float triangleVertices[]{
+	float firstTriangleVertices[]{
 		// First triangle
 		-0.5f, -0.5f, 0.0f,
 		0.0f, 0.0f, 0.0f,
-		0.5f, -0.5f, 0.0f,
+		0.5f, -0.5f, 0.0f
+	};
 
+	float secondTriangleVertices[]{
 		// Second Triangle
 		0.5f, -0.5f, 0.0f,
 		0.0f, 0.0f, 0.0f,
 		0.5f, 0.5f, 0.0f
 	};
 
-	// Creating a Vertex Array Object
-	unsigned int VAO{};
-	glGenVertexArrays(1, &VAO);
-	// Bind the VAO
-	glBindVertexArray(VAO);
+	// Creating the Vertex Array Objects
+	unsigned int firstVAO{}, secondVAO{};
+	glGenVertexArrays(1, &firstVAO);
+	glGenVertexArrays(1, &secondVAO);
+	// Bind the first VAO
+	glBindVertexArray(firstVAO);
 
 	// Create a Vertex Buffer Object
-	unsigned int VBO;
-	glGenBuffers(1, &VBO);
+	unsigned int firstVBO{}, secondVBO{};
+	glGenBuffers(1, &firstVBO);
+	glGenBuffers(1, &secondVBO);
 	// Bind the VBO to the array buffer
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, firstVBO);
 	// Input the vertex data into the array buffer
-	glBufferData(GL_ARRAY_BUFFER, sizeof(triangleVertices), triangleVertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(firstTriangleVertices), firstTriangleVertices, GL_STATIC_DRAW);
+
+	// Linking the vertex attributes
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	// Bind the second VAO and VBO respetively
+	glBindVertexArray(secondVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, secondVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(secondTriangleVertices), secondTriangleVertices, GL_STATIC_DRAW);
 
 	// Linking the vertex attributes
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
@@ -181,8 +194,12 @@ int main() {
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		// Draw the bound array buffer
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		// Draw the first Triangle
+		glBindVertexArray(firstVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+		// Draw the second Triangle
+		glBindVertexArray(secondVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
