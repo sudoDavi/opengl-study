@@ -15,6 +15,7 @@ set(
 	"rectangle"
 	"triangle-exercise"
 	"uniforms"
+	"attribs-delight"
 )
 
 set(CMAKE_CXX_STANDARD 17)
