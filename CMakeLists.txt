@@ -13,6 +13,7 @@ set(
 	"window"
 	"triangle"
 	"rectangle"
+	"triangle-exercise"
 )
 
 set(CMAKE_CXX_STANDARD 17)
