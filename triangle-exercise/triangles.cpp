@@ -146,42 +146,71 @@ int main() {
 	}
 
 	// GLSL Fragment Shader Source
-	constexpr char *fragmentShaderSource{ "#version 330 core\n"
+	constexpr char *redFragmentShaderSource{ "#version 330 core\n"
 		"out vec4 FragColor;\n"
 		"void main() {\n"
 			"FragColor = vec4(1.0f, 0.0f, 0.0f, 1.0f);\n"
 		"}\0"
 	};
 
-	// Compiling the frament shader
-	unsigned int fragmentShader{ glCreateShader(GL_FRAGMENT_SHADER) };
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
-	glCompileShader(fragmentShader);
+	constexpr char *yellowFragmentShaderSource{ "#version 330 core\n"
+		"out vec4 FragColor;\n"
+		"void main() {\n"
+			"FragColor = vec4(1.0f, 1.0f, 0.0f, 1.0f);\n"
+		"}\0"
+	};
+
+	// Compiling the frament shaders
+	unsigned int redFragmentShader{ glCreateShader(GL_FRAGMENT_SHADER) };
+	unsigned int yellowFragmentShader{ glCreateShader(GL_FRAGMENT_SHADER) };
+	glShaderSource(redFragmentShader, 1, &redFragmentShaderSource, nullptr);
+	glShaderSource(yellowFragmentShader, 1, &yellowFragmentShaderSource, nullptr);
+	glCompileShader(redFragmentShader);
+	glCompileShader(yellowFragmentShader);
 
 	// Check if the compilation was successful
-	if (!compilationSuccess(fragmentShader)) {
+	if (!compilationSuccess(redFragmentShader)) {
+		glfwTerminate();
+		return 1;
+	}
+
+	if (!compilationSuccess(yellowFragmentShader)) {
 		glfwTerminate();
 		return 1;
 	}
 
 	// Creating the default shader program
-	unsigned int shaderProgram{ glCreateProgram() };
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
+	unsigned int redShaderProgram{ glCreateProgram() };
+	unsigned int yellowShaderProgram{ glCreateProgram() };
+
+	// Add the vertex shaders
+	glAttachShader(redShaderProgram, vertexShader);
+	glAttachShader(yellowShaderProgram, vertexShader);
+
+	// Add the fragment shaders
+	glAttachShader(redShaderProgram, redFragmentShader);
+	glAttachShader(yellowShaderProgram, yellowFragmentShader);
+
+	// Link the Shaders
+	glLinkProgram(redShaderProgram);
+	glLinkProgram(yellowShaderProgram);
 
 	// Check if the linking was successful
-	if (!linkingSuccess(shaderProgram)) {
+	if (!linkingSuccess(redShaderProgram)) {
+		glfwTerminate();
+		return 1;
+	}
+
+	if (!linkingSuccess(yellowShaderProgram)) {
 		glfwTerminate();
 		return 1;
 	}
 
 	// Deleting the shader objects after linking
 	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
+	glDeleteShader(redFragmentShader);
+	glDeleteShader(yellowFragmentShader);
 
-	// Activate the shader
-	glUseProgram(shaderProgram);
 
 	// Bind a GLFW callback to change the drawing mode
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
@@ -195,9 +224,12 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		// Draw the first Triangle
+		glUseProgram(redShaderProgram);
 		glBindVertexArray(firstVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
+
 		// Draw the second Triangle
+		glUseProgram(yellowShaderProgram);
 		glBindVertexArray(secondVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
