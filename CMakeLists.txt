@@ -6,16 +6,11 @@ project(OpenGLStudy)
 find_package(glfw3)
 
 # Add GLAD
-add_subdirectory(glad)
+add_subdirectory(include/glad)
 
 set(
 	TUTORIALS
-	"window"
-	"triangle"
-	"rectangle"
-	"triangle-exercise"
-	"uniforms"
-	"attribs-delight"
+	"triangles"
 )
 
 set(CMAKE_CXX_STANDARD 17)
