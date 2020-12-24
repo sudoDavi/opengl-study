@@ -12,6 +12,7 @@ set(
 	TUTORIALS
 	"triangles"
 	"shader"
+	"textures"
 )
 
 set(CMAKE_CXX_STANDARD 17)
