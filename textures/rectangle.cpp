@@ -65,10 +65,10 @@ int main() {
 	// RECTANGLE vertices for the vertex shader
 	float rectangleVertices[]{
 		// Positions		// Colors			// Texture coords
-		-0.5f, 0.5f, 0.0f,	1.0f, 0.0f, 0.0f,	0.0f, 2.0f,	// top left
-		-0.5f, -0.5f, 0.0f,	0.0f, 0.0f, 1.0f,	0.0f, 0.0f,	// bottom left
-		0.5f, 0.5f, 0.0f,	0.0f, 1.0f, 0.0f,	2.0f, 2.0f,	// top right
-		0.5f, -0.5f, 0.0f,	0.0f, 1.0f, 0.0f,	2.0f, 0.0f  // bottom right
+		-0.5f, 0.5f, 0.0f,	1.0f, 0.0f, 0.0f,	0.40f, 0.70f,	// top left
+		-0.5f, -0.5f, 0.0f,	0.0f, 0.0f, 1.0f,	0.40f, 0.40f,	// bottom left
+		0.5f, 0.5f, 0.0f,	0.0f, 1.0f, 0.0f,	0.70f, 0.70f,	// top right
+		0.5f, -0.5f, 0.0f,	0.0f, 1.0f, 0.0f,	0.70f, 0.40f  // bottom right
 	};
 
 	// Create the array to indicate in which order the vertices are to be drawn
