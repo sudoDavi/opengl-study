@@ -40,7 +40,7 @@ int main() {
 	// Added for Mac OS X
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-	GLFWwindow* window{ glfwCreateWindow(800, 600, "LearnOpenGL - More Attributes", nullptr, nullptr) };
+	GLFWwindow* window{ glfwCreateWindow(800, 600, "LearnOpenGL - Shader class exercises", nullptr, nullptr) };
 	if (window == nullptr) {
 		std::cout << "Failed to create GLFW window\n" ;
 		glfwTerminate();
@@ -91,7 +91,9 @@ int main() {
 	glEnableVertexAttribArray(1);
 
 	// Create a new shader using the Shader Class
-	Shader defaultShader{ "shader.vert", "shader.frag" };
+	Shader defaultShader{ "shaders/shader.vert", "shaders/shader.frag" };
+	defaultShader.use();
+	
 
 	// Bind a GLFW callback to change the drawing mode
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
@@ -101,11 +103,12 @@ int main() {
 		processInput(window);
 
 		// CLEARS THE SCREEN
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		// Draw the element buffer
-		defaultShader.use();
+		auto currentTime{ glfwGetTime() };
+		defaultShader.setVec3f("offsetPos", (std::sin(currentTime) / 2.0f), 0.0f, 0.0f);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		glfwSwapBuffers(window);

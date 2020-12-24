@@ -103,14 +103,18 @@ void Shader::use() const {
 	glUseProgram(Id);
 }
 
-void Shader::setBool(const std::string &name, bool value) const {
+void Shader::setVec1b(const std::string &name, bool value) const {
 	glUniform1i(glGetUniformLocation(Id, name.c_str()), static_cast<int>(value));
 }
 
-void Shader::setInt(const std::string &name, std::int32_t value) const {
+void Shader::setVec1i(const std::string &name, std::int32_t value) const {
 	glUniform1i(glGetUniformLocation(Id, name.c_str()), value);	
 }
 
-void Shader::setFloat(const std::string &name, float value) const {
+void Shader::setVec1f(const std::string &name, float value) const {
 	glUniform1f(glGetUniformLocation(Id, name.c_str()), value);
+}
+
+void Shader::setVec3f(const std::string &name, float x, float y, float z) const {
+	glUniform3f(glGetUniformLocation(Id, name.c_str()), x, y, z);
 }

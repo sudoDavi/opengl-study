@@ -11,7 +11,7 @@ add_subdirectory(lib/glad)
 set(
 	TUTORIALS
 	"triangles"
-	"shaders"
+	"shader"
 )
 
 set(CMAKE_CXX_STANDARD 17)
