@@ -18,6 +18,16 @@ void processInput(GLFWwindow *window) {
 		glfwSetWindowShouldClose(window, true);	
 }
 
+float getVisibility(GLFWwindow *window) {
+	static float visibility{ 0.2f };
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+		visibility += 0.05f;
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+			visibility -= 0.05f;
+
+	return visibility;
+}
+
 void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 	static bool wireframeMode{ false };
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
@@ -65,10 +75,10 @@ int main() {
 	// RECTANGLE vertices for the vertex shader
 	float rectangleVertices[]{
 		// Positions		// Colors			// Texture coords
-		-0.5f, 0.5f, 0.0f,	1.0f, 0.0f, 0.0f,	0.40f, 0.70f,	// top left
-		-0.5f, -0.5f, 0.0f,	0.0f, 0.0f, 1.0f,	0.40f, 0.40f,	// bottom left
-		0.5f, 0.5f, 0.0f,	0.0f, 1.0f, 0.0f,	0.70f, 0.70f,	// top right
-		0.5f, -0.5f, 0.0f,	0.0f, 1.0f, 0.0f,	0.70f, 0.40f  // bottom right
+		-0.5f, 0.5f, 0.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f,	// top left
+		-0.5f, -0.5f, 0.0f,	0.0f, 0.0f, 1.0f,	0.0f, 0.0f,	// bottom left
+		0.5f, 0.5f, 0.0f,	0.0f, 1.0f, 0.0f,	1.0f, 1.0f,	// top right
+		0.5f, -0.5f, 0.0f,	0.0f, 1.0f, 0.0f,	1.0f, 0.0f  // bottom right
 	};
 
 	// Create the array to indicate in which order the vertices are to be drawn
@@ -132,12 +142,16 @@ int main() {
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		// Get arrow key input
+		auto smileyVisibility{ getVisibility(window) };
+
 		// Draw the Rectangle
 		defaultShader.use();
-		
+		defaultShader.setVec1f("texture2mix", smileyVisibility);
 		container.bind(GL_TEXTURE0);
 		awesomeFace.bind(GL_TEXTURE1);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
