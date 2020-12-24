@@ -65,10 +65,10 @@ int main() {
 	// RECTANGLE vertices for the vertex shader
 	float rectangleVertices[]{
 		// Positions		// Colors			// Texture coords
-		-0.5f, 0.5f, 0.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f,	// top left
+		-0.5f, 0.5f, 0.0f,	1.0f, 0.0f, 0.0f,	0.0f, 2.0f,	// top left
 		-0.5f, -0.5f, 0.0f,	0.0f, 0.0f, 1.0f,	0.0f, 0.0f,	// bottom left
-		0.5f, 0.5f, 0.0f,	0.0f, 1.0f, 0.0f,	1.0f, 1.0f,	// top right
-		0.5f, -0.5f, 0.0f,	0.0f, 1.0f, 0.0f,	1.0f, 0.0f  // bottom right
+		0.5f, 0.5f, 0.0f,	0.0f, 1.0f, 0.0f,	2.0f, 2.0f,	// top right
+		0.5f, -0.5f, 0.0f,	0.0f, 1.0f, 0.0f,	2.0f, 0.0f  // bottom right
 	};
 
 	// Create the array to indicate in which order the vertices are to be drawn
@@ -121,7 +121,7 @@ int main() {
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
 
 	// Load the container texture
-	Texture container{ "assets/container.jpeg" };
+	Texture container{ "assets/container.jpeg", false, GL_CLAMP_TO_EDGE };
 	Texture awesomeFace{ "assets/awesomeface.png", true };
 
 	// Main Rendering loop

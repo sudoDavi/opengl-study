@@ -1,6 +1,6 @@
 #include "texture.hpp"
 
-Texture::Texture(const std::string& path, bool flipY, int desiredChannels)
+Texture::Texture(const std::string& path, bool flipY, GLenum wrap, int desiredChannels)
 	{
 	// Configure Load options
 	stbi_set_flip_vertically_on_load(flipY);
@@ -33,9 +33,9 @@ Texture::Texture(const std::string& path, bool flipY, int desiredChannels)
 	glBindTexture(GL_TEXTURE_2D, m_glTexture);
 	// Configure the wrapping and filtering options
 		// Wrapping for the X axis of the texture
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
 		// Wrapping for the Y axis of the texture
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
 		// Filtering for minifying the texture
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		// Filtering for magnifying the texture
