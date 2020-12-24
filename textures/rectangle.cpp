@@ -113,6 +113,8 @@ int main() {
 	// Create a new shader using the Shader Class
 	Shader defaultShader{ "shaders/shader.vert", "shaders/shader.frag" };
 	defaultShader.use();
+	defaultShader.setVec1i("texture1", 0);
+	defaultShader.setVec1i("texture2", 1);
 	
 
 	// Bind a GLFW callback to change the drawing mode
@@ -120,7 +122,7 @@ int main() {
 
 	// Load the container texture
 	Texture container{ "assets/container.jpeg" };
-	container.bind();
+	Texture awesomeFace{ "assets/awesomeface.png", true };
 
 	// Main Rendering loop
 	while (!glfwWindowShouldClose(window)) {
@@ -132,7 +134,9 @@ int main() {
 
 		// Draw the Rectangle
 		defaultShader.use();
-		container.bind();
+		
+		container.bind(GL_TEXTURE0);
+		awesomeFace.bind(GL_TEXTURE1);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		glfwSwapBuffers(window);

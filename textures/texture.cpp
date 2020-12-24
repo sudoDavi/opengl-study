@@ -1,18 +1,29 @@
 #include "texture.hpp"
 
-Texture::Texture(const std::string& path, int desiredChannels)
-	: m_dataPtr{ stbi_load(path.c_str(), &width, &height, &numberChannels, desiredChannels) }
+Texture::Texture(const std::string& path, bool flipY, int desiredChannels)
 	{
+	// Configure Load options
+	stbi_set_flip_vertically_on_load(flipY);
+
+	// Load the image
+	int _width, _height, _numberChannels;
+	unsigned char *dataPtr{ stbi_load(path.c_str(), &_width, &_height, &_numberChannels, desiredChannels) };
+
+	// Copy the variables to public member ones
+	width = _width;
+	height = _height;
+	numberOfChannels = _numberChannels;
+
 	GLenum format;
-    if (numberChannels == 1) {
+    if (_numberChannels == 1) {
 
       format = GL_RED;
     }
-    else if (numberChannels == 3) {
+    else if (_numberChannels == 3) {
 
       format = GL_RGB;
     }
-    else if (numberChannels == 4) {
+    else if (_numberChannels == 4) {
 
       format = GL_RGBA;
     }
@@ -32,22 +43,19 @@ Texture::Texture(const std::string& path, int desiredChannels)
 	// End of configuration
 
 	// Check if loading was successful
-	if (m_dataPtr) {
+	if (dataPtr) {
 		// Load data and generate mipmaps
-		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, m_dataPtr);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, format, GL_UNSIGNED_BYTE, dataPtr);
 		glGenerateMipmap(GL_TEXTURE_2D);
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, m_glTexture);
 	} else {
 		std::cerr << "ERROR::TEXTURE::FAILURE_TO_LOAD\n";
 	}
 
 	// Free the image memory
-	stbi_image_free(m_dataPtr);
+	stbi_image_free(dataPtr);
 }
 
-void Texture::bind() const {
-	glActiveTexture(GL_TEXTURE0);
+void Texture::bind(GLenum unit) const {
+	glActiveTexture(unit);
 	glBindTexture(GL_TEXTURE_2D, m_glTexture);
 }

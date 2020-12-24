@@ -10,19 +10,18 @@
 
 class Texture {
 private:
-	unsigned char *m_dataPtr{};
 	std::uint32_t m_glTexture{};
 public:
 	Texture() = delete;
-	Texture(const std::string& path, int desiredChannels = 0);
+	Texture(const std::string& path, bool flipY = false, int desiredChannels = 0);
 
 // Public member variables
 	int width{};
 	int height{};
-	int numberChannels{};
+	int numberOfChannels{};
 
 	// Bind the texture for usage
-	void bind() const;
+	void bind(GLenum unit) const;
 };
 
 #endif

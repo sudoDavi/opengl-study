@@ -19,4 +19,5 @@ file(COPY ${ASSETS} DESTINATION "assets")
 
 add_executable(Textures ${CXX_FILES})
 
+target_compile_options(Textures PUBLIC -ggdb)
 target_link_libraries(Textures PUBLIC glad glfw)
