@@ -8,11 +8,15 @@ find_package(glfw3)
 # Add GLAD
 add_subdirectory(lib/glad)
 
+# Add GLM
+add_subdirectory(lib/glm)
+
 set(
 	TUTORIALS
 	"triangles"
 	"shader"
 	"textures"
+	"transforms"
 )
 
 set(CMAKE_CXX_STANDARD 17)
