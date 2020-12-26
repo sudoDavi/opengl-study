@@ -17,6 +17,7 @@ set(
 	"shader"
 	"textures"
 	"transforms"
+	"coords"
 )
 
 set(CMAKE_CXX_STANDARD 17)
