@@ -128,7 +128,6 @@ int main() {
 	defaultShader.use();
 	defaultShader.setVec1i("texture1", 0);
 	defaultShader.setVec1i("texture2", 1);
-
 	
 	// Bind a GLFW callback to change the drawing mode
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
@@ -142,10 +141,13 @@ int main() {
 	while (!glfwWindowShouldClose(window)) {
 		processInput(window);
 
-		// Update Transform
-		glm::mat4 trans{ glm::mat4(1.0f) };
-		trans = glm::rotate(trans, static_cast<float>(glfwGetTime()), glm::vec3(0.0f, 0.0f, 1.0f));
-		trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+		// Update Transforms
+		glm::mat4 trans1{ glm::mat4(1.0f) };
+		trans1 = glm::translate(trans1, glm::vec3(0.5f, -0.5f, 0.0f));
+		trans1 = glm::rotate(trans1, static_cast<float>(glfwGetTime()), glm::vec3(0.0f, 0.0f, 1.0f));
+		glm::mat4 trans2{ glm::mat4(1.0f) };
+		trans2 = glm::translate(trans2, glm::vec3(-0.5f, 0.5f, 0.0f));
+		trans2 = glm::scale(trans2, glm::vec3(std::sin(glfwGetTime()), std::sin(glfwGetTime()), 0.0f));
 		
 
 		// CLEARS THE SCREEN
@@ -158,9 +160,13 @@ int main() {
 		// Draw the Rectangle
 		defaultShader.use();
 		defaultShader.setVec1f("texture2mix", smileyVisibility);
-		defaultShader.setMatrix4f("transform", trans);
+		defaultShader.setMatrix4f("transform", trans1);
 		container.bind(GL_TEXTURE0);
 		awesomeFace.bind(GL_TEXTURE1);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		// Draw second container
+		defaultShader.setMatrix4f("transform", trans2);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		
 
