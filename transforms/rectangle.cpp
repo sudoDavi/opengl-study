@@ -129,11 +129,7 @@ int main() {
 	defaultShader.setVec1i("texture1", 0);
 	defaultShader.setVec1i("texture2", 1);
 
-	glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-	glm::mat4 trans{ glm::mat4(1.0f) };
-	trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
 	
-
 	// Bind a GLFW callback to change the drawing mode
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
 
@@ -147,7 +143,10 @@ int main() {
 		processInput(window);
 
 		// Update Transform
+		glm::mat4 trans{ glm::mat4(1.0f) };
 		trans = glm::rotate(trans, static_cast<float>(glfwGetTime()), glm::vec3(0.0f, 0.0f, 1.0f));
+		trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+		
 
 		// CLEARS THE SCREEN
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
