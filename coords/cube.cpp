@@ -43,6 +43,30 @@ bool shouldRotate(GLFWwindow *window) {
 	return rotating;
 }
 
+bool changeFov(GLFWwindow *window) {
+	static bool fov{ false };
+	static int delay{};
+	++delay;
+	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS && delay > 10) {
+		fov = !fov;
+		delay = 0;
+	}
+
+	return fov;	
+}
+
+bool changeAspect(GLFWwindow *window) {
+	static bool aspect{ false };
+	static int delay{};
+	++delay;
+	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS && delay > 10) {
+		aspect = !aspect;
+		delay = 0;
+	}
+
+	return aspect;	
+}
+
 void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 	static bool wireframeMode{ false };
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
@@ -194,9 +218,23 @@ int main() {
 		glm::mat4 model{ glm::mat4(1.0f) };
 
 		glm::mat4 view{ glm::mat4(1.0f) };
-		view = glm::translate(view, glm::vec3(0.0f, 0.0f, static_cast<float>(std::abs(std::sin(glfwGetTime())) * -6.0f) - 0.5f));
+		// Uncomment the line to select the right view, one keeps moving the camera back and forth, the other is static
+		// if you don't uncomment , the camera is going to be inside the first box
+		// view = glm::translate(view, glm::vec3(0.0f, 0.0f, static_cast<float>(std::abs(std::sin(glfwGetTime())) * -6.0f) - 0.5f));
+		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -6.0f));
 
-		glm::mat4 projection{ glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f) };
+		auto fov{changeFov(window)};
+		auto aspect{changeAspect(window)};
+		
+		glm::mat4 projection{ glm::mat4(1.0f) };
+		if (aspect && fov)
+			projection = glm::perspective(static_cast<float>(glfwGetTime()), std::sin(static_cast<float>(glfwGetTime())), 0.1f, 100.0f);
+		else if (fov)
+			projection = glm::perspective(static_cast<float>(glfwGetTime()), 800.0f / 600.0f, 0.1f, 100.0f);
+		else if (aspect)
+			projection = glm::perspective(glm::radians(45.0f), std::sin(static_cast<float>(glfwGetTime())), 0.1f, 100.0f);
+		else
+			projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
 
 		// CLEARS THE SCREEN
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
