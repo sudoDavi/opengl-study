@@ -26,7 +26,7 @@ float getVisibility(GLFWwindow *window) {
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 		visibility += 0.05f;
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-			visibility -= 0.05f;
+		visibility -= 0.05f;
 
 	return visibility;
 }
@@ -80,6 +80,24 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		std::cout << "Set to fill\n";
 	}
+}
+
+glm::vec3 movement(GLFWwindow* window) {
+	static float x{}, y{}, z{};
+	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+		z += 0.1f;
+	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+		z -= 0.1f;
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		x += 0.1f;
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		x -= 0.1f;
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		y -= 0.1f;
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		y += 0.1f;
+
+	return glm::vec3(x, y, z);
 }
 
 int main() {
@@ -221,7 +239,7 @@ int main() {
 		// Uncomment the line to select the right view, one keeps moving the camera back and forth, the other is static
 		// if you don't uncomment , the camera is going to be inside the first box
 		// view = glm::translate(view, glm::vec3(0.0f, 0.0f, static_cast<float>(std::abs(std::sin(glfwGetTime())) * -6.0f) - 0.5f));
-		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -6.0f));
+		view = glm::translate(view, movement(window));
 
 		auto fov{changeFov(window)};
 		auto aspect{changeAspect(window)};
