@@ -274,8 +274,8 @@ int main() {
 		for (auto index{0}; index < 10; ++index) {
 			glm::mat4 model{glm::mat4(1.0f)};
 			model = glm::translate(model, cubePositions[index]);
-			if (rotate)
-				model = glm::rotate(model, static_cast<float>(glfwGetTime()) * index * 10.0f, glm::vec3(0.5f, 1.0f, 0.5f));
+			if (rotate && !(index % 3))
+				model = glm::rotate(model, static_cast<float>(glfwGetTime()), glm::vec3(0.5f, 1.0f, 0.5f));
 			defaultShader.setMatrix4f("model", model);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
