@@ -1,6 +1,8 @@
 #include "shader.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "texture.hpp"
+#include "camera.hpp"
+#include "constants.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -82,20 +84,20 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 	}
 }
 
-glm::vec3 movement(GLFWwindow* window) {
+glm::vec3 movement(GLFWwindow* window, float deltaTime) {
 	static float x{}, y{}, z{};
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		z += 0.1f;
+		z += 0.1f * deltaTime * Config::MovementSpeed;
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		z -= 0.1f;
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		x += 0.1f;
+		z -= 0.1f * deltaTime * Config::MovementSpeed;
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		x -= 0.1f;
+		x += 0.1f * deltaTime * Config::MovementSpeed;
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		x -= 0.1f * deltaTime * Config::MovementSpeed;
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-		y -= 0.1f;
+		y -= 0.1f * deltaTime * Config::MovementSpeed;
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-		y += 0.1f;
+		y += 0.1f * deltaTime * Config::MovementSpeed;
 
 	return glm::vec3(x, y, z);
 }
@@ -226,10 +228,18 @@ int main() {
 	Texture container{ "assets/container.jpeg", false };
 	Texture awesomeFace{ "assets/awesomeface.png", true };
 
+
 	glEnable(GL_DEPTH_TEST);
+
+	float deltaTime{};
+	float lastFrame{ glfwGetTime() };
 
 	// Main Rendering loop
 	while (!glfwWindowShouldClose(window)) {
+		float currentFrame{ glfwGetTime() };
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
 		processInput(window);
 
 		// Update Transforms
@@ -239,7 +249,11 @@ int main() {
 		// Uncomment the line to select the right view, one keeps moving the camera back and forth, the other is static
 		// if you don't uncomment , the camera is going to be inside the first box
 		// view = glm::translate(view, glm::vec3(0.0f, 0.0f, static_cast<float>(std::abs(std::sin(glfwGetTime())) * -6.0f) - 0.5f));
-		view = glm::lookAt(movement(window), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		Camera fpsCam{ movement(window, deltaTime)};
+		view = fpsCam.lookAt();
+		// Implements the movement of the Camera Position, NOT THE TARGET
+		// view = glm::lookAt(movement(window), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		// IMPLEMENTS A ROTATING CAMERA AROUND THE MIDDLE BLOCK
 		// float radius = 10.0f;
         // float camX   = sin(glfwGetTime()) * radius;
         // float camZ   = cos(glfwGetTime()) * radius;
