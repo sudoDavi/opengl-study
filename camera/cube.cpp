@@ -2,7 +2,7 @@
 #include "shader.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "texture.hpp"
-#include "flycam.hpp"
+#include "fpscam.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -16,7 +16,7 @@
 
 // I know it is a global variable, but I'm just using it because I haven't implemented a Game Object yet
 // and it's just so I can use the scrool for the zoom
-FlyCam camera{ glm::vec3(0.0f, 0.0f, 3.0f) };
+FpsCam camera{ glm::vec3(0.0f, 0.0f, 3.0f) };
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
@@ -88,22 +88,22 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 	}
 }
 
-void movement(GLFWwindow* window, float deltaTime, FlyCam& camera) {
+void movement(GLFWwindow* window, float deltaTime, FpsCam& camera) {
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.Move(FlyCam::Movement::FORWARD, deltaTime);
+        camera.Move(Camera::Movement::FORWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-       camera.Move(FlyCam::Movement::BACKWARD, deltaTime);
+       camera.Move(Camera::Movement::BACKWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.Move(FlyCam::Movement::LEFT, deltaTime);
+        camera.Move(Camera::Movement::LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.Move(FlyCam::Movement::RIGHT, deltaTime);
+        camera.Move(Camera::Movement::RIGHT, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-		camera.Move(FlyCam::Movement::UP, deltaTime);
+		camera.Move(Camera::Movement::UP, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-		camera.Move(FlyCam::Movement::DOWN, deltaTime);
+		camera.Move(Camera::Movement::DOWN, deltaTime);
 }
 
-void mouseDirection(GLFWwindow* window, FlyCam& camera) {
+void mouseDirection(GLFWwindow* window, FpsCam& camera) {
 	static float lastX{ 400.0f }, lastY{ 300.0f };
 	double xpos{}, ypos{};
 	glfwGetCursorPos(window, &xpos, &ypos);

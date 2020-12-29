@@ -1,10 +1,6 @@
 #ifndef CONSTANTS_HPP
 #define CONSTANTS_HPP
 
-namespace Config {
-	static constexpr float MovementSpeed{ 10.0f };
-}
-
 namespace CameraConfig {
 	static constexpr float DefaultYaw{ -90.0f };
 	static constexpr float DefaultPitch{ 0.0f };
@@ -14,6 +10,10 @@ namespace CameraConfig {
 }
 
 namespace FlyCamConfig {
+	static constexpr float DefaultMovementSpeed{ 2.5f };
+}
+
+namespace FpsCamConfig {
 	static constexpr float DefaultMovementSpeed{ 2.5f };
 }
 
