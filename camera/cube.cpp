@@ -1,8 +1,8 @@
+#include "constants.hpp"
 #include "shader.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "texture.hpp"
-#include "camera.hpp"
-#include "constants.h"
+#include "flycam.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -13,6 +13,10 @@
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
+
+// I know it is a global variable, but I'm just using it because I haven't implemented a Game Object yet
+// and it's just so I can use the scrool for the zoom
+FlyCam camera{ glm::vec3(0.0f, 0.0f, 3.0f) };
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
@@ -84,22 +88,37 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 	}
 }
 
-glm::vec3 movement(GLFWwindow* window, float deltaTime) {
-	static float x{}, y{}, z{};
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		z += 0.1f * deltaTime * Config::MovementSpeed;
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		z -= 0.1f * deltaTime * Config::MovementSpeed;
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		x += 0.1f * deltaTime * Config::MovementSpeed;
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		x -= 0.1f * deltaTime * Config::MovementSpeed;
+void movement(GLFWwindow* window, float deltaTime, FlyCam& camera) {
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera.Move(FlyCam::Movement::FORWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+       camera.Move(FlyCam::Movement::BACKWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera.Move(FlyCam::Movement::LEFT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera.Move(FlyCam::Movement::RIGHT, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-		y -= 0.1f * deltaTime * Config::MovementSpeed;
+		camera.Move(FlyCam::Movement::UP, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-		y += 0.1f * deltaTime * Config::MovementSpeed;
+		camera.Move(FlyCam::Movement::DOWN, deltaTime);
+}
 
-	return glm::vec3(x, y, z);
+void mouseDirection(GLFWwindow* window, FlyCam& camera) {
+	static float lastX{ 400.0f }, lastY{ 300.0f };
+	double xpos{}, ypos{};
+	glfwGetCursorPos(window, &xpos, &ypos);
+
+	float xoffset{ xpos - lastX };
+	float yoffset{ lastY - ypos };
+	lastX = xpos;
+	lastY = ypos;
+
+	camera.PointAt(xoffset, yoffset);
+}
+
+void scrollHandle(GLFWwindow* window, double xoffset, double yoffset) {
+	std::cout << yoffset << '\n';
+	camera.ChangeZoom(yoffset);
 }
 
 int main() {
@@ -224,6 +243,12 @@ int main() {
 	// Bind a GLFW callback to change the drawing mode
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
 
+	// Capture the mouse
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+	// Bind callback to Scroll Input
+	glfwSetScrollCallback(window, scrollHandle);
+
 	// Load the container texture
 	Texture container{ "assets/container.jpeg", false };
 	Texture awesomeFace{ "assets/awesomeface.png", true };
@@ -249,8 +274,6 @@ int main() {
 		// Uncomment the line to select the right view, one keeps moving the camera back and forth, the other is static
 		// if you don't uncomment , the camera is going to be inside the first box
 		// view = glm::translate(view, glm::vec3(0.0f, 0.0f, static_cast<float>(std::abs(std::sin(glfwGetTime())) * -6.0f) - 0.5f));
-		Camera fpsCam{ movement(window, deltaTime)};
-		view = fpsCam.lookAt();
 		// Implements the movement of the Camera Position, NOT THE TARGET
 		// view = glm::lookAt(movement(window), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		// IMPLEMENTS A ROTATING CAMERA AROUND THE MIDDLE BLOCK
@@ -258,6 +281,10 @@ int main() {
         // float camX   = sin(glfwGetTime()) * radius;
         // float camZ   = cos(glfwGetTime()) * radius;
         // view = glm::lookAt(glm::vec3(camX, 0.0f, camZ), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        // Use the FlyCam class, which has movement
+        movement(window, deltaTime, camera);
+        mouseDirection(window, camera);
+        view = camera.GetLookAt();
 
 		auto fov{changeFov(window)};
 		auto aspect{changeAspect(window)};
@@ -270,7 +297,7 @@ int main() {
 		else if (aspect)
 			projection = glm::perspective(glm::radians(45.0f), std::sin(static_cast<float>(glfwGetTime())), 0.1f, 100.0f);
 		else
-			projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+			projection = glm::perspective(glm::radians(camera.Zoom()), 800.0f / 600.0f, 0.1f, 100.0f);
 
 		// CLEARS THE SCREEN
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
