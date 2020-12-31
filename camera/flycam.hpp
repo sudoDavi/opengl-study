@@ -14,7 +14,8 @@ public: // Camera Options
 	// Member Types
 	using Movement = Camera::Movement;
 
-private: // Member variables
+// Changed to Public just for this exercise
+public: // Member variables
 	Camera m_Cam;
 
 public: // Public Member Functions

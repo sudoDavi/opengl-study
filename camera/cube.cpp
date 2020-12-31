@@ -2,7 +2,7 @@
 #include "shader.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "texture.hpp"
-#include "fpscam.hpp"
+#include "flycam.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -16,7 +16,31 @@
 
 // I know it is a global variable, but I'm just using it because I haven't implemented a Game Object yet
 // and it's just so I can use the scrool for the zoom
-FpsCam camera{ glm::vec3(0.0f, 0.0f, 3.0f) };
+FlyCam camera{ glm::vec3(0.0f, 0.0f, 3.0f) };
+
+glm::mat4 calculateLookAt(glm::vec3 position, glm::vec3 target, glm::vec3 worldUp) {
+	glm::vec3 zaxis{ glm::normalize(position - target) };
+	glm::vec3 xaxis{ glm::normalize(glm::cross(glm::normalize(worldUp), zaxis)) };
+	glm::vec3 yaxis{ glm::cross(zaxis, xaxis) };
+
+	glm::mat4 translation{ glm::mat4(1.0f) };
+	translation[3][0] = -position.x;
+	translation[3][1] = -position.y;
+	translation[3][2] = -position.z;
+
+	glm::mat4 rotation{ glm::mat4(1.0f) };
+	rotation[0][0] = xaxis.x; // First column, first row
+	rotation[1][0] = xaxis.y;
+	rotation[2][0] = xaxis.z;
+	rotation[0][1] = yaxis.x; // First column, second row
+	rotation[1][1] = yaxis.y;
+	rotation[2][1] = yaxis.z;
+	rotation[0][2] = zaxis.x; // First column, third row
+	rotation[1][2] = zaxis.y;
+	rotation[2][2] = zaxis.z;
+
+	return rotation * translation;
+}
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
@@ -88,7 +112,7 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 	}
 }
 
-void movement(GLFWwindow* window, float deltaTime, FpsCam& camera) {
+void movement(GLFWwindow* window, float deltaTime, FlyCam& camera) {
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         camera.Move(Camera::Movement::FORWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -103,7 +127,7 @@ void movement(GLFWwindow* window, float deltaTime, FpsCam& camera) {
 		camera.Move(Camera::Movement::DOWN, deltaTime);
 }
 
-void mouseDirection(GLFWwindow* window, FpsCam& camera) {
+void mouseDirection(GLFWwindow* window, FlyCam& camera) {
 	static float lastX{ 400.0f }, lastY{ 300.0f };
 	double xpos{}, ypos{};
 	glfwGetCursorPos(window, &xpos, &ypos);
@@ -284,7 +308,7 @@ int main() {
         // Use the FlyCam class, which has movement
         movement(window, deltaTime, camera);
         mouseDirection(window, camera);
-        view = camera.GetLookAt();
+        view = calculateLookAt(glm::vec3(camera.m_Cam.Position.x, 0.0f, camera.m_Cam.Position.z), glm::vec3(0.0f, 0.0f, 0.0f), camera.m_Cam.WorldUp);
 
 		auto fov{changeFov(window)};
 		auto aspect{changeAspect(window)};
