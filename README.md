@@ -34,7 +34,7 @@ make
 ## Usage <a name = "usage"></a>
 
 And you're done, every compiled program should be inside of its own folder.
-Like the `Shaders` program, which after built will be inside `build/shader/` with the name `Shaders`.
+Like the `Shaders` program, which after built will be inside `build/src/shader/` with the name `Shaders`.
 
 
 ## Contributing <a name = "contributing"></a>
