@@ -11,23 +11,12 @@ add_subdirectory(lib/glad)
 # Add GLM
 add_subdirectory(lib/glm)
 
-
-
-set(
-	TUTORIALS
-	"triangles"
-	"shader"
-	"textures"
-	"transforms"
-	"coords"
-	"camera"
-)
+# Add all header files inside lib/
+include_directories(lib)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
-foreach(TUTORIAL ${TUTORIALS})
-	add_subdirectory(${TUTORIAL})
-	# Add all header files inside lib/
-	include_directories(lib)
-endforeach()
+# Add the src folder
+add_subdirectory(src)
+
