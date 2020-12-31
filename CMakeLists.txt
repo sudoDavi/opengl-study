@@ -11,6 +11,8 @@ add_subdirectory(lib/glad)
 # Add GLM
 add_subdirectory(lib/glm)
 
+
+
 set(
 	TUTORIALS
 	"triangles"
@@ -26,4 +28,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 foreach(TUTORIAL ${TUTORIALS})
 	add_subdirectory(${TUTORIAL})
+	# Add all header files inside lib/
+	include_directories(lib)
 endforeach()
