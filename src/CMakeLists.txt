@@ -8,6 +8,7 @@ set(
 	"shader"
 	"transforms"
 	"triangles"
+	"lighting"
 )
 
 foreach(TUTORIAL ${TUTORIALS})
