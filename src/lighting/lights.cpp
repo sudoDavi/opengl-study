@@ -13,6 +13,8 @@
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
+#include <algorithm>
+
 
 // I know it is a global variable, but I'm just using it because I haven't implemented a Game Object yet
 // and it's just so I can use the scrool for the zoom
@@ -53,11 +55,8 @@ bool shouldRotate(GLFWwindow *window) {
 
 void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 	static bool wireframeMode{ false };
-	static bool captureMouse{ true };
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
 		wireframeMode = !wireframeMode;
-	else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
-		captureMouse = !captureMouse;
 
 	if (wireframeMode) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -66,15 +65,6 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 	else {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		std::cout << "Set to fill\n";
-	}
-
-	if (captureMouse) {
-		// Capture the mouse
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	}
-	else {
-		// Uncapture the mouse
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	}
 }
 
@@ -226,7 +216,9 @@ int main() {
 	Shader lightingShader{ "shaders/lighting.vert", "shaders/lighting.frag" };
 	lightingShader.use();
 	lightingShader.setVec3f("objectColor", 1.0f, 0.5f, 0.31f);
-	lightingShader.setVec3f("lightColor", 1.0f, 1.0f, 1.0f);
+	//Create a vec3 so we can modify the colors during run-time
+	glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
+	lightingShader.setVec3f("lightColor", lightColor);
 
 	// Shader for the light source cube object i.e Lamp
 	Shader lightObjectShader{ "shaders/lighting.vert", "shaders/light.frag" };
@@ -252,6 +244,7 @@ int main() {
 	float deltaTime{};
 	float lastFrame{ glfwGetTime() };
 
+
 	// Main Rendering loop
 	while (!glfwWindowShouldClose(window)) {
 		float currentFrame{ glfwGetTime() };
@@ -259,6 +252,14 @@ int main() {
 		lastFrame = currentFrame;
 
 		processInput(window);
+
+		//Modify the color of the light
+		float sinOfTime{ std::abs(std::sin(currentFrame)) };
+		lightColor = glm::vec3(sinOfTime);
+
+		// Modify the lightPosition to the camera's position
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+			lightPos = camera.GetPosition();
 
 		// Update Transforms
 
@@ -284,7 +285,8 @@ int main() {
 		lightingShader.use();
 		lightingShader.setMatrix4f("view", view);
 		lightingShader.setMatrix4f("projection", projection);
-		lightingShader.setVec3f("lightPos", lightPos.x, lightPos.y, lightPos.y);
+		lightingShader.setVec3f("lightPos", lightPos);
+		lightingShader.setVec3f("lightColor", lightColor);
 
 		auto rotate{ shouldRotate(window) };
 		

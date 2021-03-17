@@ -56,3 +56,7 @@ void FlyCam::ChangeZoom(float yoffset) {
 glm::mat4 FlyCam::GetLookAt() const {
 	return m_Cam.GetLookAt();
 }
+
+const glm::vec3& FlyCam::GetPosition() const {
+	return m_Cam.Position;
+}

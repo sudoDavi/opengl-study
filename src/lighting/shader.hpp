@@ -31,6 +31,7 @@ public:
 	void setVec1i(const std::string &name, std::int32_t value) const;
 	void setVec1f(const std::string &name, float value) const;
 	void setVec3f(const std::string &name, float x, float y, float z) const;
+	void setVec3f(const std::string &name, const glm::vec3 &vector) const;
 	void setMatrix4f(const std::string &name, const glm::mat4 &matrix) const;
 };
 

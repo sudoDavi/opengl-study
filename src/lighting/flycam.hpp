@@ -28,6 +28,7 @@ public: // Public Member Functions
 	float Zoom() { return m_Cam.Zoom; }
 
 	glm::mat4 GetLookAt() const;
+	const glm::vec3& GetPosition() const;
 };
 
 #endif
