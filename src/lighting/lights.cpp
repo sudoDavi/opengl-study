@@ -244,6 +244,9 @@ int main() {
 	float deltaTime{};
 	float lastFrame{ glfwGetTime() };
 
+	// Boolean to tell the program to render or not render the LIGHT OBJECT (cube)
+	bool hideLight{ false };
+
 
 	// Main Rendering loop
 	while (!glfwWindowShouldClose(window)) {
@@ -254,12 +257,17 @@ int main() {
 		processInput(window);
 
 		//Modify the color of the light
-		float sinOfTime{ std::abs(std::sin(currentFrame)) };
-		lightColor = glm::vec3(sinOfTime);
+		// float sinOfTime{ std::abs(std::sin(currentFrame)) };
+		// lightColor = glm::vec3(sinOfTime);
 
 		// Modify the lightPosition to the camera's position
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+		{
 			lightPos = camera.GetPosition();
+			hideLight = true;
+		}
+		else
+			hideLight = false;
 
 		// Update Transforms
 
@@ -298,16 +306,18 @@ int main() {
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// Draw the light source cube
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, lightPos);
-		model = glm::scale(model, glm::vec3(0.2f));
-		lightObjectShader.use();
-		lightObjectShader.setMatrix4f("view", view);
-		lightObjectShader.setMatrix4f("projection", projection);
-		lightObjectShader.setMatrix4f("model", model);
-		glBindVertexArray(lightVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		
+		if (!hideLight)
+		{
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, lightPos);
+			model = glm::scale(model, glm::vec3(0.2f));
+			lightObjectShader.use();
+			lightObjectShader.setMatrix4f("view", view);
+			lightObjectShader.setMatrix4f("projection", projection);
+			lightObjectShader.setMatrix4f("model", model);
+			glBindVertexArray(lightVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 36);	
+		}
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
