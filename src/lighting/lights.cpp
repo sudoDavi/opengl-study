@@ -221,7 +221,7 @@ int main() {
 	lightingShader.setVec3f("lightColor", lightColor);
 
 	// Shader for the light source cube object i.e Lamp
-	Shader lightObjectShader{ "shaders/lighting.vert", "shaders/light.frag" };
+	Shader lightObjectShader{ "shaders/light.vert", "shaders/light.frag" };
 	// Position of the light source in the world
 	glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 	
@@ -295,13 +295,10 @@ int main() {
 		lightingShader.setMatrix4f("projection", projection);
 		lightingShader.setVec3f("lightPos", lightPos);
 		lightingShader.setVec3f("lightColor", lightColor);
-
-		auto rotate{ shouldRotate(window) };
+		lightingShader.setVec3f("viewPos", camera.GetPosition());
 		
 		glm::mat4 model{glm::mat4(1.0f)};
 		model = glm::translate(model, cubePosition);
-		if (rotate)
-			model = glm::rotate(model, static_cast<float>(glfwGetTime()), glm::vec3(0.5f, 1.0f, 0.5f));
 		lightingShader.setMatrix4f("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
