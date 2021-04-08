@@ -223,6 +223,7 @@ int main() {
 	// Shader for the light source cube object i.e Lamp
 	Shader lightObjectShader{ "shaders/light.vert", "shaders/light.frag" };
 	// Position of the light source in the world
+	glm::vec3 lightOffset(0.0f);
 	glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 	
 	// Bind a GLFW callback to change the drawing mode
@@ -269,6 +270,18 @@ int main() {
 		else
 			hideLight = false;
 
+		// Make the light rotate around the scene if the key R was pressed
+		if (shouldRotate(window))
+		{
+			lightOffset.x = sin(currentFrame) + lightPos.x;
+			lightOffset.z = cos(currentFrame) + lightPos.z;
+			lightOffset.y = lightPos.y;
+		}
+		else
+		{
+			lightOffset = lightPos;
+		}
+
 		// Update Transforms
 
 		glm::mat4 view{ glm::mat4(1.0f) };
@@ -293,7 +306,7 @@ int main() {
 		lightingShader.use();
 		lightingShader.setMatrix4f("view", view);
 		lightingShader.setMatrix4f("projection", projection);
-		lightingShader.setVec3f("lightPos", lightPos);
+		lightingShader.setVec3f("lightPos", lightOffset);
 		lightingShader.setVec3f("lightColor", lightColor);
 		lightingShader.setVec3f("viewPos", camera.GetPosition());
 		
@@ -306,7 +319,7 @@ int main() {
 		if (!hideLight)
 		{
 			model = glm::mat4(1.0f);
-			model = glm::translate(model, lightPos);
+			model = glm::translate(model, lightOffset);
 			model = glm::scale(model, glm::vec3(0.2f));
 			lightObjectShader.use();
 			lightObjectShader.setMatrix4f("view", view);
