@@ -225,6 +225,7 @@ int main() {
 	// Position of the light source in the world
 	glm::vec3 lightOffset(0.0f);
 	glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+	glm::vec3 lightColor;
 	
 	// Bind a GLFW callback to change the drawing mode
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
@@ -258,8 +259,12 @@ int main() {
 		processInput(window);
 
 		//Modify the color of the light
-		// float sinOfTime{ std::abs(std::sin(currentFrame)) };
-		// lightColor = glm::vec3(sinOfTime);
+		lightColor.x = std::sin(currentFrame * 2.0f);
+		lightColor.y = std::sin(currentFrame * 0.7f);
+		lightColor.z = std::sin(currentFrame * 1.3f);
+
+		glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);
+		glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
 
 		// Modify the lightPosition to the camera's position
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
@@ -307,8 +312,8 @@ int main() {
 		lightingShader.setMatrix4f("view", view);
 		lightingShader.setMatrix4f("projection", projection);
 		lightingShader.setVec3f("light.position", lightOffset);
-		lightingShader.setVec3f("light.ambient", 0.2f, 0.2f, 0.2f);
-		lightingShader.setVec3f("light.diffuse", 0.5f, 0.5f, 0.5f);
+		lightingShader.setVec3f("light.ambient", ambientColor);
+		lightingShader.setVec3f("light.diffuse", diffuseColor);
 		lightingShader.setVec3f("light.specular", 1.0f, 1.0f, 1.0f);
 		lightingShader.setVec3f("viewPos", camera.GetPosition());
 		lightingShader.setVec3f("material.ambient", 1.0f, 0.5f, 0.31f);
