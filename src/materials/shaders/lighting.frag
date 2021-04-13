@@ -22,7 +22,6 @@ in vec3 FragPos;
 
 out vec4 FragColor;
 
-uniform vec3 objectColor;
 uniform vec3 viewPos;
 
 void main() {
@@ -41,6 +40,6 @@ void main() {
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
 	vec3 specular = light.specular * (material.specular * spec);
 
-	vec3 result = (ambient + diffuse + specular) * objectColor;
+	vec3 result = ambient + diffuse + specular;
     FragColor = vec4(result, 1.0);
 }

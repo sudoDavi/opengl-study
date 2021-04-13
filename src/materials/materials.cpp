@@ -259,12 +259,7 @@ int main() {
 		processInput(window);
 
 		//Modify the color of the light
-		lightColor.x = std::sin(currentFrame * 2.0f);
-		lightColor.y = std::sin(currentFrame * 0.7f);
-		lightColor.z = std::sin(currentFrame * 1.3f);
-
-		glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);
-		glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
+		lightColor = glm::vec3(1.0f);
 
 		// Modify the lightPosition to the camera's position
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
@@ -312,14 +307,14 @@ int main() {
 		lightingShader.setMatrix4f("view", view);
 		lightingShader.setMatrix4f("projection", projection);
 		lightingShader.setVec3f("light.position", lightOffset);
-		lightingShader.setVec3f("light.ambient", ambientColor);
-		lightingShader.setVec3f("light.diffuse", diffuseColor);
-		lightingShader.setVec3f("light.specular", 1.0f, 1.0f, 1.0f);
+		lightingShader.setVec3f("light.ambient", lightColor);
+		lightingShader.setVec3f("light.diffuse", lightColor);
+		lightingShader.setVec3f("light.specular", lightColor);
 		lightingShader.setVec3f("viewPos", camera.GetPosition());
-		lightingShader.setVec3f("material.ambient", 1.0f, 0.5f, 0.31f);
-		lightingShader.setVec3f("material.diffuse", 1.0f, 0.5f, 0.31f);
-		lightingShader.setVec3f("material.specular", 0.5f, 0.5f, 0.5f);
-		lightingShader.setVec1f("material.shininess", 32.0f);
+		lightingShader.setVec3f("material.ambient", 0.0f, 0.1f, 0.06f);
+		lightingShader.setVec3f("material.diffuse", 0.0f, 0.50980392f, 0.50980392f);
+		lightingShader.setVec3f("material.specular", 0.50196078f, 0.50196078f, 0.50196078f);
+		lightingShader.setVec1f("material.shininess", 0.25f * 128);
 		
 		glm::mat4 model{glm::mat4(1.0f)};
 		model = glm::translate(model, cubePosition);
