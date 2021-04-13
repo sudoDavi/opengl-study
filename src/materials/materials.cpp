@@ -311,10 +311,10 @@ int main() {
 		lightingShader.setVec3f("light.diffuse", lightColor);
 		lightingShader.setVec3f("light.specular", lightColor);
 		lightingShader.setVec3f("viewPos", camera.GetPosition());
-		lightingShader.setVec3f("material.ambient", 0.0f, 0.1f, 0.06f);
-		lightingShader.setVec3f("material.diffuse", 0.0f, 0.50980392f, 0.50980392f);
-		lightingShader.setVec3f("material.specular", 0.50196078f, 0.50196078f, 0.50196078f);
-		lightingShader.setVec1f("material.shininess", 0.25f * 128);
+		lightingShader.setVec3f("material.ambient", 0.24725f,  	0.1995f, 0.0745f);
+		lightingShader.setVec3f("material.diffuse", 0.75164f, 0.60648f, 0.22648f);
+		lightingShader.setVec3f("material.specular", 0.628281f, 0.555802f, 0.366065f);
+		lightingShader.setVec1f("material.shininess", 0.4f * 128);
 		
 		glm::mat4 model{glm::mat4(1.0f)};
 		model = glm::translate(model, cubePosition);
