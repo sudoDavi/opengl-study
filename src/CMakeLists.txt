@@ -9,7 +9,6 @@ set(
 	"transforms"
 	"triangles"
 	"lighting"
-	"materials"
 )
 
 foreach(TUTORIAL ${TUTORIALS})
