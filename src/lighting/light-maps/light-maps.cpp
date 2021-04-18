@@ -217,7 +217,7 @@ int main() {
 
 	// Load Textures
 	Texture container{ "assets/container2.png", false, GL_CLAMP_TO_EDGE };
-	Texture containerSpecular{ "assets/container2_specular.png", false, GL_CLAMP_TO_EDGE };
+	Texture containerSpecular{ "assets/lighting_maps_specular_color.png", false, GL_CLAMP_TO_EDGE };
 
 	// Create the shader that's used to light up the Cube
 	Shader lightingShader{ "shaders/lighting.vert", "shaders/lighting.frag" };
