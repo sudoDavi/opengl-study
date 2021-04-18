@@ -218,6 +218,7 @@ int main() {
 	// Load Textures
 	Texture container{ "assets/container2.png", false, GL_CLAMP_TO_EDGE };
 	Texture containerSpecular{ "assets/container2_specular.png", false, GL_CLAMP_TO_EDGE };
+	Texture emissionPattern{ "assets/matrix.jpg", false };
 
 	// Create the shader that's used to light up the Cube
 	Shader lightingShader{ "shaders/lighting.vert", "shaders/lighting.frag" };
@@ -313,8 +314,10 @@ int main() {
 		lightingShader.setVec1f("material.shininess", 0.5f * 128);
 		lightingShader.setVec1i("material.specular", 1);
 		lightingShader.setVec1i("material.diffuse", 0);
+		lightingShader.setVec1i("emissionMap", 2);
 		container.bind(GL_TEXTURE0);
 		containerSpecular.bind(GL_TEXTURE1);
+		emissionPattern.bind(GL_TEXTURE2);
 		
 		glm::mat4 model{glm::mat4(1.0f)};
 		model = glm::translate(model, cubePosition);
