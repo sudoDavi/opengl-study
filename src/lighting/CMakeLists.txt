@@ -7,6 +7,7 @@ set(
 	"basic-light"
 	"materials"
 	"light-maps"
+	"light-casters"
 )
 
 foreach(TUTORIAL ${TUTORIALS})
