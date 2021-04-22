@@ -236,9 +236,15 @@ int main() {
 
 	// Shader for the light source cube object i.e Lamp
 	Shader lightObjectShader{ "shaders/light.vert", "shaders/light.frag" };
-	// Position of the light source in the world
+
+	// Position of the DIRECTIONAL light source in the world
 	glm::vec3 lightPos(0.2f, 1.0f, 0.3f);
 	glm::vec3 lightDirection(glm::vec3(0.0f) - lightPos);
+
+	// Position of the POINT light in the world;
+	glm::vec3 pointLightPos(1.0f, 1.5f, 3.0f);
+
+	// Color of the light in the scene
 	glm::vec3 lightColor;
 	
 	// Bind a GLFW callback to change the drawing mode
@@ -256,7 +262,7 @@ int main() {
 	float deltaTime{};
 	float lastFrame{ glfwGetTime() };
 
-
+	bool hidePointLight{ false };
 
 	// Main Rendering loop
 	while (!glfwWindowShouldClose(window)) {
@@ -264,7 +270,16 @@ int main() {
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
+		// Input handling
 		processInput(window);
+
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+		{
+			pointLightPos = camera.GetPosition();
+			hidePointLight = true;
+		}
+		else
+			hidePointLight = false;
 
 		//Modify the color of the light
 		lightColor = glm::vec3(1.0f);
@@ -285,17 +300,20 @@ int main() {
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// Draw the Cube
+		// Draw a set of Cubes (Containers)
 		glBindVertexArray(VAO);
 		glm::mat4 model{ glm::mat4(1.0f) };
 		lightingShader.use();
 		lightingShader.setMatrix4f("view", view);
 		lightingShader.setMatrix4f("projection", projection);
 		lightingShader.setMatrix4f("model", model);
-		lightingShader.setVec3f("light.direction", lightDirection);
-		lightingShader.setVec3f("light.ambient", lightColor * 0.2f);
-		lightingShader.setVec3f("light.diffuse", lightColor * 0.5f);
-		lightingShader.setVec3f("light.specular", lightColor);
+		lightingShader.setVec3f("pointLight.position", pointLightPos);
+		lightingShader.setVec3f("pointLight.ambient", lightColor * 0.2f);
+		lightingShader.setVec3f("pointLight.diffuse", lightColor * 0.5f);
+		lightingShader.setVec3f("pointLight.specular", lightColor);
+		lightingShader.setVec1f("pointLight.constantAtt", 1.0f);
+		lightingShader.setVec1f("pointLight.linearAtt", 0.09f);
+		lightingShader.setVec1f("pointLight.quadraticAtt", 0.08f);
 		lightingShader.setVec3f("viewPos", camera.GetPosition());
 		lightingShader.setVec1f("material.shininess", 0.5f * 128);
 		lightingShader.setVec1i("material.specular", 1);
@@ -312,6 +330,19 @@ int main() {
 			lightingShader.setMatrix4f("model", model);
 
 			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+
+		// Draw the light object
+		if (!hidePointLight) {
+			glBindVertexArray(lightVAO);
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, pointLightPos);
+			model = glm::scale(model, glm::vec3(0.2f));
+			lightObjectShader.use();
+			lightObjectShader.setMatrix4f("view", view);
+			lightObjectShader.setMatrix4f("projection", projection);
+			lightObjectShader.setMatrix4f("model", model);
+			glDrawArrays(GL_TRIANGLES, 0, 36);	
 		}
 		
 
