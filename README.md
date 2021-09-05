@@ -12,15 +12,15 @@ All the programs up until now have been from [LearnOpenGL](https://learnopengl.c
 
 ### Prerequisites
 
-You'll need a modern C++ compiler that supports at least C++17, also you'll need a copy of the [**GLFW**](https://github.com/glfw/glfw) library,
-and **CMake**, everything else should be included.
+You'll need a modern C++ compiler that supports at least C++17 and **CMake**, everything else should be included.
 
 ### Installing
 
-Make a folder for the build and use CMake on that, make sure to link against any libraries it complains about, specially
-GLFW, that's the main dependency of the project.
+Clone the repository with `git clone --recursive` .
 
-The way you'll use the compiler will vary from compiler to compiler.
+Make a folder for the build and use CMake on that.
+
+The way you'll use the compiler will vary from system to system.
 
 Here is a linux example:
 ```
