@@ -29,6 +29,7 @@ public: // Public Member Functions
 
 	glm::mat4 GetLookAt() const;
 	const glm::vec3& GetPosition() const;
+	const glm::vec3& GetTarget() const;
 };
 
 #endif

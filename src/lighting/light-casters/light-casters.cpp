@@ -288,9 +288,9 @@ int main() {
 
 		glm::mat4 view{ glm::mat4(1.0f) };
 
-        movement(window, deltaTime, camera);
-        mouseDirection(window, camera);
-        view = camera.GetLookAt();
+	        movement(window, deltaTime, camera);
+        	mouseDirection(window, camera);
+	        view = camera.GetLookAt();
 		
 		glm::mat4 projection{ glm::mat4(1.0f) };
 		
@@ -307,13 +307,15 @@ int main() {
 		lightingShader.setMatrix4f("view", view);
 		lightingShader.setMatrix4f("projection", projection);
 		lightingShader.setMatrix4f("model", model);
-		lightingShader.setVec3f("pointLight.position", pointLightPos);
-		lightingShader.setVec3f("pointLight.ambient", lightColor * 0.2f);
-		lightingShader.setVec3f("pointLight.diffuse", lightColor * 0.5f);
-		lightingShader.setVec3f("pointLight.specular", lightColor);
-		lightingShader.setVec1f("pointLight.constantAtt", 1.0f);
-		lightingShader.setVec1f("pointLight.linearAtt", 0.09f);
-		lightingShader.setVec1f("pointLight.quadraticAtt", 0.08f);
+		lightingShader.setVec3f("spotLight.position", camera.GetPosition());
+		lightingShader.setVec3f("spotLight.direction", camera.GetTarget());
+		lightingShader.setVec1f("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+		lightingShader.setVec3f("spotLight.ambient", lightColor * 0.2f);
+		lightingShader.setVec3f("spotLight.diffuse", lightColor * 0.5f);
+		lightingShader.setVec3f("spotLight.specular", lightColor);
+		lightingShader.setVec1f("spotLight.constantAtt", 1.0f);
+		lightingShader.setVec1f("spotLight.linearAtt", 0.09f);
+		lightingShader.setVec1f("spotLight.quadraticAtt", 0.08f);
 		lightingShader.setVec3f("viewPos", camera.GetPosition());
 		lightingShader.setVec1f("material.shininess", 0.5f * 128);
 		lightingShader.setVec1i("material.specular", 1);

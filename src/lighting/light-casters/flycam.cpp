@@ -60,3 +60,7 @@ glm::mat4 FlyCam::GetLookAt() const {
 const glm::vec3& FlyCam::GetPosition() const {
 	return m_Cam.Position;
 }
+
+const glm::vec3& FlyCam::GetTarget() const {
+	return m_Cam.Target;
+}
