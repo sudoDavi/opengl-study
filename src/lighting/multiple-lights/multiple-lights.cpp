@@ -251,16 +251,23 @@ int main() {
 
 	// Directional Light
 	lightingShader.setVec3f("directionalLight.direction", lightDirection);
-	lightingShader.setVec3f("directionalLight.ambient", lightColor * 0.05f);
-	lightingShader.setVec3f("directionalLight.diffuse", lightColor * 0.4f);
+	lightingShader.setVec3f("directionalLight.ambient", 0.3f, 0.24f, 0.14f);
+	lightingShader.setVec3f("directionalLight.diffuse", 0.7f, 0.42f, 0.26f);
 	lightingShader.setVec3f("directionalLight.specular", lightColor * 0.5f);
 
 	// Point Lights
+	glm::vec3 pointLightColors[]{
+		glm::vec3(1.0f, 0.6f, 0.0f),
+		glm::vec3(1.0f, 0.0f, 0.0f),
+		glm::vec3(1.0f),
+		glm::vec3(0.2f, 0.2f, 1.0f)
+	};
+
 	for (auto index{0}; index < 4; ++index) {
 		lightingShader.setVec3f("pointLights[" + std::to_string(index) + "].position", pointLightPositions[index]);
-		lightingShader.setVec3f("pointLights[" + std::to_string(index) + "].ambient", lightColor * 0.05f);
-		lightingShader.setVec3f("pointLights[" + std::to_string(index) + "].diffuse", lightColor * 0.8f);
-		lightingShader.setVec3f("pointLights[" + std::to_string(index) + "].specular", lightColor);
+		lightingShader.setVec3f("pointLights[" + std::to_string(index) + "].ambient", pointLightColors[index] * 0.1f);
+		lightingShader.setVec3f("pointLights[" + std::to_string(index) + "].diffuse", pointLightColors[index]);
+		lightingShader.setVec3f("pointLights[" + std::to_string(index) + "].specular", pointLightColors[index]);
 		lightingShader.setVec1f("pointLights[" + std::to_string(index) + "].constantAtt", 1.0f);
 		lightingShader.setVec1f("pointLights[" + std::to_string(index) + "].linearAtt", 0.09f);
 		lightingShader.setVec1f("pointLights[" + std::to_string(index) + "].quadraticAtt", 0.032f);
@@ -331,7 +338,7 @@ int main() {
 		projection = glm::perspective(glm::radians(camera.Zoom()), 800.0f / 600.0f, 0.1f, 100.0f);
 
 		// CLEARS THE SCREEN
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClearColor(0.75f, 0.52f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Draw a set of Cubes (Containers)
