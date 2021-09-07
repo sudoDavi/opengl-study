@@ -311,14 +311,14 @@ int main() {
 		lightingShader.setVec3f("spotLight.direction", camera.GetTarget());
 		lightingShader.setVec1f("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
 		lightingShader.setVec1f("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
-		lightingShader.setVec3f("spotLight.ambient", lightColor * 0.2f);
-		lightingShader.setVec3f("spotLight.diffuse", lightColor * 0.5f);
+		lightingShader.setVec3f("spotLight.ambient", lightColor * 0.1f);
+		lightingShader.setVec3f("spotLight.diffuse", lightColor * 0.8f);
 		lightingShader.setVec3f("spotLight.specular", lightColor);
 		lightingShader.setVec1f("spotLight.constantAtt", 1.0f);
 		lightingShader.setVec1f("spotLight.linearAtt", 0.09f);
-		lightingShader.setVec1f("spotLight.quadraticAtt", 0.08f);
+		lightingShader.setVec1f("spotLight.quadraticAtt", 0.032f);
 		lightingShader.setVec3f("viewPos", camera.GetPosition());
-		lightingShader.setVec1f("material.shininess", 0.5f * 128);
+		lightingShader.setVec1f("material.shininess", 0.5f * 64);
 		lightingShader.setVec1i("material.specular", 1);
 		lightingShader.setVec1i("material.diffuse", 0);
 		container.bind(GL_TEXTURE0);

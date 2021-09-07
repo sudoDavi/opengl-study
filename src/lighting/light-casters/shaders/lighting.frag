@@ -73,24 +73,18 @@ void main() {
 	float epsilon = spotLight.cutOff - spotLight.outerCutOff;
 	float intensity = clamp((theta - spotLight.outerCutOff) / epsilon, 0.0, 1.0);
 
-	if(theta > spotLight.cutOff)
-	{
+	float diff = max(dot(norm, lightDir), 0.0);
+	vec3 diffuse = attenuation * spotLight.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
 
-		float diff = max(dot(norm, lightDir), 0.0);
-		vec3 diffuse = attenuation * spotLight.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
+	// Specular Lighting
+	vec3 viewDir = normalize(viewPos - FragPos);
+	vec3 reflectDir = reflect(-lightDir, norm);
+	float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+	vec3 specular = attenuation * spotLight.specular * spec *  vec3(texture(material.specular, TexCoords));
 
-		// Specular Lighting
-		vec3 viewDir = normalize(viewPos - FragPos);
-		vec3 reflectDir = reflect(-lightDir, norm);
-		float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-		vec3 specular = attenuation * spotLight.specular * spec *  vec3(texture(material.specular, TexCoords));
+	diffuse *= intensity;
+	specular *= intensity;
 
-		diffuse *= intensity;
-		specular *= intensity;
-
-		vec3 result = ambient + diffuse + specular;
-		FragColor = vec4(result, 1.0);
-	}
-	else
-		FragColor = vec4(spotLight.ambient * vec3(texture(material.diffuse, TexCoords)), 1.0);
+	vec3 result = ambient + diffuse + specular;
+	FragColor = vec4(result, 1.0);
 }
