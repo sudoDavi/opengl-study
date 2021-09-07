@@ -310,6 +310,7 @@ int main() {
 		lightingShader.setVec3f("spotLight.position", camera.GetPosition());
 		lightingShader.setVec3f("spotLight.direction", camera.GetTarget());
 		lightingShader.setVec1f("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+		lightingShader.setVec1f("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
 		lightingShader.setVec3f("spotLight.ambient", lightColor * 0.2f);
 		lightingShader.setVec3f("spotLight.diffuse", lightColor * 0.5f);
 		lightingShader.setVec3f("spotLight.specular", lightColor);
