@@ -9,6 +9,12 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(BUILD_SHARED_LIBS ON)
 add_subdirectory(lib/glfw)
 
+# Add Assimp
+set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_ZLIB ON)
+add_subdirectory(lib/assimp)
+
 # Add GLAD
 add_subdirectory(lib/glad)
 

@@ -9,6 +9,7 @@ set(
 	"transforms"
 	"triangles"
 	"lighting"
+	"model-loading"
 )
 
 foreach(TUTORIAL ${TUTORIALS})
