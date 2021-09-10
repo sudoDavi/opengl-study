@@ -1,6 +1,6 @@
 #include "model.hpp"
 
-Model::Model(std::string &path) {
+Model::Model(const std::string &path) {
 	loadModel(path);
 }
 
@@ -9,7 +9,7 @@ void Model::Draw(Shader &shader) {
 		meshes[index].Draw(shader);
 }
 
-void Model::loadModel(std::string &path) {
+void Model::loadModel(const std::string &path) {
 	Assimp::Importer import;
 	const aiScene *scene{ import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs) };
 
@@ -34,6 +34,42 @@ void Model::processNode(aiNode *node, const aiScene *scene) {
 	}
 }
 
+std::uint32_t TextureFromFile(const char *path, const std::string &directory, bool gamma) {
+	std::string filename = std::string(path);
+	filename = directory + '/' + filename;
+
+	std::uint32_t textureID;
+	glGenTextures(1, &textureID);
+
+	int width, height, nrComponents;
+	unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
+	if (data) {
+		GLenum format;
+		if (nrComponents == 1)
+			format = GL_RED;
+		else if (nrComponents == 3)
+			format = GL_RGB;
+		else if (nrComponents == 4)
+			format = GL_RGBA;
+
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		stbi_image_free(data);
+	}
+	else {
+		std::cout << "Texture failed to load at path: " << path << std::endl;
+		stbi_image_free(data);
+	}
+
+	return textureID;
+}
+
 std::vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, const aiTextureType &type, const std::string &typeName) {
 	std::vector<Texture> textures;
 	for (auto index{0}; index < mat->GetTextureCount(type); ++index) {
@@ -50,10 +86,11 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, const aiTextur
 		}
 		if (!skipLoading) {
 			Texture texture;
-			texture.Id = TextureFromFile(str.C_Str(), directory);
+		       	texture.Id = TextureFromFile(str.C_Str(), this->directory);
 			texture.Type = typeName;
-			texture.Path = str;
+			texture.Path = str.C_Str();
 			textures.push_back(texture);
+			textures_loaded.push_back(texture);
 		}
 	}
 
@@ -96,11 +133,11 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
 		aiMaterial *material { scene->mMaterials[mesh->mMaterialIndex] };
 
 		std::vector<Texture> diffuseMaps { loadMaterialTextures(material,
-				aiTextureType_DIFFUSE, "texture_diffuse");
+				aiTextureType_DIFFUSE, "texture_diffuse") };
 		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 
 		std::vector<Texture> specularMaps { loadMaterialTextures(material,
-				aiTextureType_SPECULAR, "texture_specular");
+				aiTextureType_SPECULAR, "texture_specular") };
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 	}
 

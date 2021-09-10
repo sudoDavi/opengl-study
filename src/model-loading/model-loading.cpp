@@ -1,8 +1,8 @@
 #include "constants.hpp"
 #include "shader.hpp"
 #define STB_IMAGE_IMPLEMENTATION
-#include "texture.hpp"
 #include "flycam.hpp"
+#include "model.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -134,161 +134,13 @@ int main() {
 	// Assign a callback function for when the screen is resized
 	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
-	// CUBE vertices for the vertex shader
-	float cubeVertices[] = {
-	    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-    
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
-    
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-    
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-    
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-    
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
-	};
+	Shader basicShader { "shaders/basic-shader.vert", "shaders/basic-shader.frag" };
 
-	glm::vec3 cubePositions[]{
-		glm::vec3( 0.0f,  0.0f,  0.0f),
-		glm::vec3( 2.0f,  5.0f, -15.0f), 
-		glm::vec3(-1.5f, -2.2f, -2.5f),
-		glm::vec3(-3.8f, -2.0f, -12.3f),
-		glm::vec3( 2.4f, -0.4f, -3.5f),
-		glm::vec3(-1.7f,  3.0f, -7.5f),
-		glm::vec3( 1.3f, -2.0f, -2.5f),
-		glm::vec3( 1.5f,  2.0f, -2.5f),
-		glm::vec3( 1.5f,  0.2f, -1.5f),
-		glm::vec3(-1.3f,  1.0f, -1.5f) 
-	};
+	stbi_set_flip_vertically_on_load(true);
 
-	glm::vec3 pointLightPositions[]{
-		glm::vec3( 0.7f, 0.2f, 2.0f),
-		glm::vec3( 2.3f, -3.3f, -4.0f),
-		glm::vec3( -4.0f, 2.0f, -12.0f),
-		glm::vec3( 0.0f, 0.0f, -3.0f)
-	};
+	Model backpack { "assets/backpack.obj" };
 
-
-	// Creating a Vertex Array Object
-	unsigned int VAO{};
-	glGenVertexArrays(1, &VAO);
-	// Bind the VAO
-	glBindVertexArray(VAO);
-
-	// Create a Vertex Buffer Object
-	unsigned int VBO;
-	glGenBuffers(1, &VBO);
-	// Bind the VBO to the array buffer
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	// Input the vertex data into the array buffer
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
-
-	// Vertex position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	// Normal Vector attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	// UV Map attribute
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-
-	// Create a new VAO for the light object
-	unsigned int lightVAO{};
-	glGenVertexArrays(1, &lightVAO);
-	glBindVertexArray(lightVAO);
-	// We can re-use the same VBO, since we're doing a cube light object
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	// Re-configure the VertexAttributes
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	// Load Textures
-	Texture container{ "assets/container2.png", false, GL_CLAMP_TO_EDGE };
-	Texture containerSpecular{ "assets/container2_specular.png", false, GL_CLAMP_TO_EDGE };
-
-	// Position of the DIRECTIONAL light source in the world
-	glm::vec3 lightPos(0.2f, 1.0f, 0.3f);
-	glm::vec3 lightDirection(glm::vec3(0.0f) - lightPos);
-
-	// Color of the light in the scene
-	glm::vec3 lightColor(1.0f);
-
-	// Create the shader that's used to light up the Cube
-	Shader lightingShader{ "shaders/lighting.vert", "shaders/lighting.frag" };
-	lightingShader.use();
-
-	// Directional Light
-	lightingShader.setVec3f("directionalLight.direction", lightDirection);
-	lightingShader.setVec3f("directionalLight.ambient", lightColor * 0.0f);
-	lightingShader.setVec3f("directionalLight.diffuse", lightColor * 0.05f);
-	lightingShader.setVec3f("directionalLight.specular", lightColor * 0.2f);
-
-	// Point Lights
-	glm::vec3 pointLightColors[]{
-		glm::vec3(0.1f),
-		glm::vec3(0.1f),
-		glm::vec3(0.1f),
-		glm::vec3(0.3f, 0.2f, 1.0f)
-	};
-
-	for (auto index{0}; index < 4; ++index) {
-		lightingShader.setVec3f("pointLights[" + std::to_string(index) + "].position", pointLightPositions[index]);
-		lightingShader.setVec3f("pointLights[" + std::to_string(index) + "].ambient", pointLightColors[index] * 0.1f);
-		lightingShader.setVec3f("pointLights[" + std::to_string(index) + "].diffuse", pointLightColors[index]);
-		lightingShader.setVec3f("pointLights[" + std::to_string(index) + "].specular", pointLightColors[index]);
-		lightingShader.setVec1f("pointLights[" + std::to_string(index) + "].constantAtt", 1.0f);
-		lightingShader.setVec1f("pointLights[" + std::to_string(index) + "].linearAtt", 0.09f);
-		lightingShader.setVec1f("pointLights[" + std::to_string(index) + "].quadraticAtt", 0.032f);
-	}
-
-	// SpotLight
-	lightingShader.setVec1f("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-	lightingShader.setVec1f("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
-	lightingShader.setVec3f("spotLight.ambient", lightColor * 0.1f);
-	lightingShader.setVec3f("spotLight.diffuse", lightColor * 0.8f);
-	lightingShader.setVec3f("spotLight.specular", lightColor);
-	lightingShader.setVec1f("spotLight.constantAtt", 1.0f);
-	lightingShader.setVec1f("spotLight.linearAtt", 0.09f);
-	lightingShader.setVec1f("spotLight.quadraticAtt", 0.032f);
-	lightingShader.setVec1f("material.shininess", 0.5f * 64);
-	lightingShader.setVec1i("material.specular", 1);
-	lightingShader.setVec1i("material.diffuse", 0);
-
-	// Shader for the light source cube object i.e Lamp
-	Shader lightObjectShader{ "shaders/light.vert", "shaders/light.frag" };
-	
+		
 	// Bind a GLFW callback to change the drawing mode
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
 
@@ -304,8 +156,6 @@ int main() {
 	float deltaTime{};
 	float lastFrame{ glfwGetTime() };
 
-	bool hidePointLight{ false };
-
 	// Main Rendering loop
 	while (!glfwWindowShouldClose(window)) {
 		float currentFrame{ glfwGetTime() };
@@ -314,16 +164,6 @@ int main() {
 
 		// Input handling
 		processInput(window);
-
-		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
-		{
-			hidePointLight = true;
-		}
-		else
-			hidePointLight = false;
-
-		//Modify the color of the light
-		lightColor = glm::vec3(1.0f);
 
 		// Update Transforms
 
@@ -338,49 +178,19 @@ int main() {
 		projection = glm::perspective(glm::radians(camera.Zoom()), 800.0f / 600.0f, 0.1f, 100.0f);
 
 		// CLEARS THE SCREEN
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// Draw a set of Cubes (Containers)
-		glBindVertexArray(VAO);
-		glm::mat4 model{ glm::mat4(1.0f) };
-		lightingShader.use();
-		lightingShader.setMatrix4f("view", view);
-		lightingShader.setMatrix4f("projection", projection);
-		lightingShader.setMatrix4f("model", model);
-		lightingShader.setVec3f("viewPos", camera.GetPosition());
-		lightingShader.setVec3f("spotLight.position", camera.GetPosition());
-		lightingShader.setVec3f("spotLight.direction", camera.GetTarget());
-		
-		container.bind(GL_TEXTURE0);
-		containerSpecular.bind(GL_TEXTURE1);
+		basicShader.use();
+		basicShader.setMatrix4f("projection", projection);
+		basicShader.setMatrix4f("view", view);
 
+		glm::mat4 model { glm::mat4(1.0f) };
+		//model = glm::translate(model, glm::vec3(0.0f));
+		//model = glm::scale(model, glm::vec3(1.0f));
 
-		for (auto index{0}; index < 10; ++index) {
-			model = glm::mat4(1.0f);
-			model = glm::translate(model, cubePositions[index]);
-			float angle = 20.0f * index;
-			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-			lightingShader.setMatrix4f("model", model);
-
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
-
-		// Draw the light object
-		if (!hidePointLight) {
-			glBindVertexArray(lightVAO);
-			for (auto index{0}; index < 4; ++index) {
-				model = glm::mat4(1.0f);
-				model = glm::translate(model, pointLightPositions[index]);
-				model = glm::scale(model, glm::vec3(0.2f));
-				lightObjectShader.use();
-				lightObjectShader.setMatrix4f("view", view);
-				lightObjectShader.setMatrix4f("projection", projection);
-				lightObjectShader.setMatrix4f("model", model);
-				glDrawArrays(GL_TRIANGLES, 0, 36);
-			}	
-		}
-		
+		basicShader.setMatrix4f("model", model);
+		backpack.Draw(basicShader);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
