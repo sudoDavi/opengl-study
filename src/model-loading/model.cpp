@@ -11,7 +11,8 @@ void Model::Draw(Shader &shader) {
 
 void Model::loadModel(const std::string &path) {
 	Assimp::Importer import;
-	const aiScene *scene{ import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs) };
+	const aiScene *scene{ import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_FlipUVs
+			| aiProcess_CalcTangentSpace) };
 
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
 		std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
@@ -102,44 +103,64 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
 	std::vector<std::uint32_t> indices;
 	std::vector<Texture> textures;
 
-	for (auto index {0}; index < mesh->mNumVertices; ++index) {
-		glm::vec3 position { mesh->mVertices[index].x, mesh->mVertices[index].y,
-			mesh->mVertices[index].y };
+	for (auto index{0}; index <mesh->mNumVertices; ++index) {
+		Vertex vertex;
+		glm::vec3 vector;
+		vector.x = mesh->mVertices[index].x;
+		vector.y = mesh->mVertices[index].y;
+		vector.z = mesh->mVertices[index].z;
 
-		glm::vec3 normal { mesh->mNormals[index].x, mesh->mNormals[index].y,
-			mesh->mNormals[index].z };
-		
-		glm::vec2 uvMap;
-		if (mesh->mTextureCoords[0]) { // Does the mesh have UV mapping?
-			uvMap = { mesh->mTextureCoords[0][index].x,
-				mesh->mTextureCoords[0][index].y };
+		vertex.Position = vector;
+
+		if (mesh->HasNormals()) {
+			vector.x = mesh->mNormals[index].x;
+			vector.y = mesh->mNormals[index].y;
+			vector.z = mesh->mNormals[index].z;
+			vertex.Normal = vector;
+		}
+
+		if (mesh->mTextureCoords[0]) {
+			glm::vec2 vec;
+			vec.x = mesh->mTextureCoords[0][index].x;
+			vec.y = mesh->mTextureCoords[0][index].y;
+			vertex.TexCoords = vec;
+
+			vector.x = mesh->mTangents[index].x;
+			vector.y = mesh->mTangents[index].y;
+			vector.z = mesh->mTangents[index].z;
+			vertex.Tangent = vector;
+
+			vector.x = mesh->mBitangents[index].x;
+			vector.y = mesh->mBitangents[index].y;
+			vector.z = mesh->mBitangents[index].z;
+			vertex.Bitangent = vector;
 		}
 		else
-			uvMap = { 0.0f, 0.0f };
+			vertex.TexCoords = glm::vec2(0.0f, 0.0f);
 
-
-		vertices.push_back(Vertex(position, normal, uvMap));
+		vertices.push_back(vertex);
 	}
 
-	for (auto index{0}; index < mesh->mNumFaces; ++index) {
-		aiFace face { mesh->mFaces[index] };
+	for(auto index{0}; index < mesh->mNumFaces; ++index) {
+		aiFace face = mesh->mFaces[index];
 
-		for (auto vertexIndex{0}; vertexIndex < face.mNumIndices; ++vertexIndex)
-			indices.push_back(face.mIndices[vertexIndex]);
+		for (auto faceIndex{0} ; faceIndex < face.mNumIndices; ++faceIndex)
+			indices.push_back(face.mIndices[faceIndex]);
 	}
 
+	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
-	if (mesh->mMaterialIndex >= 0) {
-		aiMaterial *material { scene->mMaterials[mesh->mMaterialIndex] };
+	std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+	textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 
-		std::vector<Texture> diffuseMaps { loadMaterialTextures(material,
-				aiTextureType_DIFFUSE, "texture_diffuse") };
-		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+	std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+	textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 
-		std::vector<Texture> specularMaps { loadMaterialTextures(material,
-				aiTextureType_SPECULAR, "texture_specular") };
-		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-	}
+	std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
+	textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+
+	std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
+	textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
 	return Mesh(vertices, indices, textures);
 }
