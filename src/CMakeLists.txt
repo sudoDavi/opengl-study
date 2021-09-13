@@ -10,6 +10,7 @@ set(
 	"triangles"
 	"lighting"
 	"model-loading"
+	"depth-testing"
 )
 
 foreach(TUTORIAL ${TUTORIALS})
