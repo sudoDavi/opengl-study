@@ -76,6 +76,7 @@ int main()
     // -----------------------------
     glEnable(GL_STENCIL_TEST);
     glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
     glEnable(GL_DEPTH_TEST);
 
     // build and compile shaders
@@ -251,6 +252,7 @@ int main()
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	
 	// Returning the state machine to normal
+	glStencilMask(0XFF);
 	glStencilFunc(GL_ALWAYS, 0, 0xFF);
 	glEnable(GL_DEPTH_TEST);
 
