@@ -11,6 +11,7 @@ set(
 	"lighting"
 	"model-loading"
 	"depth-testing"
+	"stencil-testing"
 )
 
 foreach(TUTORIAL ${TUTORIALS})
