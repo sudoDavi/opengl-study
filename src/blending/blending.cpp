@@ -204,7 +204,7 @@ int main() {
 		1.0f,  0.5f,  0.0f,  1.0f,  0.0f
 	};
 
-	Shader shader { "shaders/basic-shader.vert", "shaders/basic-shader.frag" };
+	Shader shader { "shaders/basic-shader.vert", "shaders/blending.frag" };
 
 	Texture grassTexture { "assets/grass.png", false, GL_CLAMP_TO_EDGE };
 	Texture metalTexture { "assets/metal.png", true };

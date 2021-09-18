@@ -45,7 +45,7 @@ Texture::Texture(const std::string& path, bool flipY, GLenum wrap, int desiredCh
 	// Check if loading was successful
 	if (dataPtr) {
 		// Load data and generate mipmaps
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, format, GL_UNSIGNED_BYTE, dataPtr);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, format, GL_UNSIGNED_BYTE, dataPtr);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	} else {
 		std::cerr << "ERROR::TEXTURE::FAILURE_TO_LOAD\n";
