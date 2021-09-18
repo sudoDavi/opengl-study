@@ -12,6 +12,7 @@ set(
 	"model-loading"
 	"depth-testing"
 	"stencil-testing"
+	"blending"
 )
 
 foreach(TUTORIAL ${TUTORIALS})
