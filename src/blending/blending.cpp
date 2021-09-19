@@ -209,6 +209,7 @@ int main() {
 	Texture grassTexture { "assets/grass.png", false, GL_CLAMP_TO_EDGE };
 	Texture containerTexture { "assets/container.jpeg", true, GL_CLAMP_TO_EDGE };
 	Texture earthTexture { "assets/earth.png", true };
+	Texture windowsTexture{ "assets/windows.png", false, GL_CLAMP_TO_EDGE };
 	
 	std::vector<glm::vec3> vegetation;
 	vegetation.push_back(glm::vec3(-1.5f, 0.0f, -0.48f));
@@ -217,11 +218,17 @@ int main() {
 	vegetation.push_back(glm::vec3(0.0f, 0.0f, 0.5f));
 	vegetation.push_back(glm::vec3(0.5f, 0.0f, -0.6f));
 
-	std::uint32_t vegetationVBO, vegetationVAO;
-	glGenVertexArrays(1, &vegetationVAO);
-	glGenBuffers(1, &vegetationVBO);
-	glBindVertexArray(vegetationVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, vegetationVBO);
+	std::vector<glm::vec3> windows;
+	windows.push_back(glm::vec3(-1.5f, 0.0f, -0.7f));
+	windows.push_back(glm::vec3(1.5f, 0.0f, 6.0f));
+	windows.push_back(glm::vec3(-0.8f, 0.0f, 1.4f));
+	windows.push_back(glm::vec3(1.0f, 0.0f, -1.0f));
+
+	std::uint32_t quadsVBO, quadsVAO;
+	glGenVertexArrays(1, &quadsVAO);
+	glGenBuffers(1, &quadsVBO);
+	glBindVertexArray(quadsVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, quadsVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
@@ -261,8 +268,12 @@ int main() {
 	// Bind callback to Scroll Input
 	glfwSetScrollCallback(window, scrollHandle);
 
-
+	// Depth testing
 	glEnable(GL_DEPTH_TEST);
+
+	// Blending
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	float deltaTime{};
 	float lastFrame{ glfwGetTime() };
@@ -309,11 +320,20 @@ int main() {
 
 
 		// Grass
-		glBindVertexArray(vegetationVAO);
+		glBindVertexArray(quadsVAO);
 		grassTexture.bind(GL_TEXTURE0);
 		for (auto index{0}; index < vegetation.size(); ++index) {
 			model = glm::mat4(1.0f);
 			model = glm::translate(model, vegetation[index]);
+			shader.setMatrix4f("model", model);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
+
+		// Windows
+		windowsTexture.bind(GL_TEXTURE0);
+		for (auto index{0}; index < windows.size(); ++index) {
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, windows[index]);
 			shader.setMatrix4f("model", model);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 		}
