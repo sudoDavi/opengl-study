@@ -15,6 +15,8 @@
 #include <cmath>
 #include <algorithm>
 #include <string>
+#include <vector>
+#include <map>
 
 
 // I know it is a global variable, but I'm just using it because I haven't implemented a Game Object yet
@@ -204,13 +206,16 @@ int main() {
 		1.0f,  0.5f,  0.0f,  1.0f,  0.0f
 	};
 
+	// Shaders
 	Shader shader { "shaders/basic-shader.vert", "shaders/blending.frag" };
 
+	// Textures
 	Texture grassTexture { "assets/grass.png", false, GL_CLAMP_TO_EDGE };
 	Texture containerTexture { "assets/container.jpeg", true, GL_CLAMP_TO_EDGE };
 	Texture earthTexture { "assets/earth.png", true };
 	Texture windowsTexture{ "assets/windows.png", false, GL_CLAMP_TO_EDGE };
 	
+	// Object Positions
 	std::vector<glm::vec3> vegetation;
 	vegetation.push_back(glm::vec3(-1.5f, 0.0f, -0.48f));
 	vegetation.push_back(glm::vec3(1.5f, 0.0f, 4.0f));
@@ -318,25 +323,41 @@ int main() {
 		shader.setMatrix4f("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
-
-		// Grass
-		glBindVertexArray(quadsVAO);
-		grassTexture.bind(GL_TEXTURE0);
-		for (auto index{0}; index < vegetation.size(); ++index) {
-			model = glm::mat4(1.0f);
-			model = glm::translate(model, vegetation[index]);
-			shader.setMatrix4f("model", model);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
+		// Map for distance based sorting
+		std::map<float, glm::vec3> sortedPositions;
+		for (auto index{0}; index < windows.size(); ++index) {
+			float distance{ glm::length(camera.GetPosition() - windows[index]) };
+			sortedPositions[distance] = windows[index];
 		}
+
+		// Drawing quads
+		glBindVertexArray(quadsVAO);
 
 		// Windows
 		windowsTexture.bind(GL_TEXTURE0);
-		for (auto index{0}; index < windows.size(); ++index) {
+		for (auto iterator = sortedPositions.rbegin(); iterator != sortedPositions.rend(); ++iterator) {
 			model = glm::mat4(1.0f);
-			model = glm::translate(model, windows[index]);
+			model = glm::translate(model, iterator->second);
 			shader.setMatrix4f("model", model);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 		}
+
+		// Grass
+		// Uncomment this and comment the Windows rendering code to display grassy quads :P
+		/*
+		grassTexture.bind(GL_TEXTURE0);
+		for (auto index{0}; index < vegetation.size(); ++index) {
+			float distance{ glm::length(camera.GetPositions() - vegetation[index] };
+			sortedPositions[distance] = vegetations[index];
+		}
+
+		for (auto iterator = sortedPositions.rbegin(); iterator != sortedPositions.rend(); ++iterator) {
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, iterator->second);
+			shader.setMatrix4f("model", model);
+			glDrawArrays(GL_TRIANGLES, 0 ,6);
+		}
+		*/
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
