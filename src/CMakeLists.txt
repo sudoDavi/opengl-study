@@ -13,6 +13,7 @@ set(
 	"depth-testing"
 	"stencil-testing"
 	"blending"
+	"culling"
 )
 
 foreach(TUTORIAL ${TUTORIALS})
