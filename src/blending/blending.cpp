@@ -207,8 +207,8 @@ int main() {
 	Shader shader { "shaders/basic-shader.vert", "shaders/blending.frag" };
 
 	Texture grassTexture { "assets/grass.png", false, GL_CLAMP_TO_EDGE };
-	Texture metalTexture { "assets/metal.png", true };
-	Texture marbleTexture { "assets/marble.png", true };
+	Texture containerTexture { "assets/container.jpeg", true, GL_CLAMP_TO_EDGE };
+	Texture earthTexture { "assets/earth.png", true };
 	
 	std::vector<glm::vec3> vegetation;
 	vegetation.push_back(glm::vec3(-1.5f, 0.0f, -0.48f));
@@ -292,7 +292,7 @@ int main() {
 		shader.setMatrix4f("view", view);
 		// cubes
 		glBindVertexArray(cubeVAO);
-		metalTexture.bind(GL_TEXTURE0);
+		containerTexture.bind(GL_TEXTURE0);
 		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
 		shader.setMatrix4f("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -302,7 +302,7 @@ int main() {
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		// floor
 		glBindVertexArray(planeVAO);
-		marbleTexture.bind(GL_TEXTURE0);
+		earthTexture.bind(GL_TEXTURE0);
 		model = glm::mat4(1.0f);
 		shader.setMatrix4f("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
