@@ -138,7 +138,7 @@ int main() {
 
 	stbi_set_flip_vertically_on_load(true);
 
-	Model backpack { "assets/backpack.obj" };
+	Model backpack { "assets/backpack/backpack.obj" };
 
 	glm::vec3 objectPositions[]{
 		glm::vec3(2.0f, 1.0f, 0.0f),

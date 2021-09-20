@@ -13,9 +13,7 @@ file(MAKE_DIRECTORY shaders)
 file(COPY ${SHADERS} DESTINATION "shaders")
 
 # Copy the assets folder
-file(GLOB_RECURSE ASSETS "${PROJECT_SOURCE_DIR}/assets/*")
-file(MAKE_DIRECTORY assets)
-file(COPY ${ASSETS} DESTINATION "assets")
+file(COPY ${ASSETS_DIR} DESTINATION "${PROJECT_BINARY_DIR}")
 
 add_executable(Stencil_Testing ${CXX_FILES})
 

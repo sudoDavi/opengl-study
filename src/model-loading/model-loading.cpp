@@ -138,7 +138,7 @@ int main() {
 
 	stbi_set_flip_vertically_on_load(true);
 
-	Model backpack { "assets/backpack.obj" };
+	Model backpack { "assets/backpack/backpack.obj" };
 
 		
 	// Bind a GLFW callback to change the drawing mode

@@ -27,6 +27,9 @@ include_directories(lib)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
+# Create the Assets folder variable
+set(ASSETS_DIR "${PROJECT_SOURCE_DIR}/assets")
+
 # Add the src folder
 add_subdirectory(src)
 
