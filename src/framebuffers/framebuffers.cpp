@@ -207,9 +207,21 @@ int main() {
 	     1.0f,  1.0f,  1.0f, 1.0f
 	};
 
+	float transparentVertices[] = {
+		// positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
+		0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+		0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
+		1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+
+		0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+		1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+		1.0f,  0.5f,  0.0f,  1.0f,  0.0f
+	};
+
 	
 	// Shaders
 	Shader shader { "shaders/basic-shader.vert", "shaders/blending.frag" };
+	Shader framebufferShader { "shaders/framebuffer.vert", "shaders/framebuffer.frag" };
 
 	// Textures
 	Texture grassTexture { "assets/grass.png", false, GL_CLAMP_TO_EDGE };
@@ -231,12 +243,25 @@ int main() {
 	windows.push_back(glm::vec3(-0.8f, 0.0f, 1.4f));
 	windows.push_back(glm::vec3(1.0f, 0.0f, -1.0f));
 
-	std::uint32_t quadsVBO, quadsVAO;
-	glGenVertexArrays(1, &quadsVAO);
-	glGenBuffers(1, &quadsVBO);
-	glBindVertexArray(quadsVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, quadsVBO);
+	// Quad VAO
+	std::uint32_t quadVBO, quadVAO;
+	glGenVertexArrays(1, &quadVAO);
+	glGenBuffers(1, &quadVBO);
+	glBindVertexArray(quadVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+	// Grass VAO
+	std::uint32_t grassVBO, grassVAO;
+	glGenVertexArrays(1, &grassVAO);
+	glGenBuffers(1, &grassVBO);
+	glBindVertexArray(grassVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, grassVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(1);
@@ -307,6 +332,10 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// draw objects
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 		shader.use();
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom()), 800.0f / 600.0f, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetLookAt();
@@ -330,7 +359,7 @@ int main() {
 		shader.setMatrix4f("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
-		/*
+		
 		// Map for distance based sorting
 		std::map<float, glm::vec3> sortedPositions;
 		for (auto index{0}; index < windows.size(); ++index) {
@@ -339,7 +368,7 @@ int main() {
 		}
 
 		// Drawing quads
-		glBindVertexArray(quadsVAO);
+		glBindVertexArray(grassVAO);
 
 		// Grass
 		grassTexture.bind(GL_TEXTURE0);
@@ -354,7 +383,7 @@ int main() {
 			shader.setMatrix4f("model", model);
 			glDrawArrays(GL_TRIANGLES, 0 ,6);
 		}
-		*/
+		
 
 		// Second render pass
 
@@ -362,8 +391,12 @@ int main() {
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		
-		glBindVertexArray(quadsVAO);
+		glBindVertexArray(quadVAO);
+		framebufferShader.use();
+
 		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_BLEND);
+
 		glBindTexture(GL_TEXTURE_2D, frameBuffer.GetColorBuffer());
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
