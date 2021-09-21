@@ -14,6 +14,7 @@ set(
 	"stencil-testing"
 	"blending"
 	"culling"
+	"framebuffers"
 )
 
 foreach(TUTORIAL ${TUTORIALS})
