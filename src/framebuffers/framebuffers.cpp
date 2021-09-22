@@ -222,6 +222,7 @@ int main() {
 	// Shaders
 	Shader shader { "shaders/basic-shader.vert", "shaders/blending.frag" };
 	Shader framebufferShader { "shaders/framebuffer.vert", "shaders/framebuffer.frag" };
+	Shader rearviewShader { "shaders/rearview-shader.vert", "shaders/framebuffer.frag" };
 
 	// Textures
 	Texture grassTexture { "assets/grass.png", false, GL_CLAMP_TO_EDGE };
@@ -290,7 +291,9 @@ int main() {
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
+	// Framebuffers
 	Framebuffer frameBuffer{ true, true, Framebuffer::AttachTyp::RenderBuffer };
+	Framebuffer rearviewFrameBuffer{ true, true, Framebuffer::AttachTyp::RenderBuffer };
 
 		
 	// Bind a GLFW callback to change the drawing mode
@@ -384,8 +387,62 @@ int main() {
 			glDrawArrays(GL_TRIANGLES, 0 ,6);
 		}
 		
+		// Second Render pass
+		
+		// Bind rear view framebuffer
+		rearviewFrameBuffer.Bind();
 
-		// Second render pass
+		// CLEARS THE SCREEN
+		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// draw objects
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		shader.use();
+		projection = glm::perspective(glm::radians(camera.Zoom()), 800.0f / 600.0f, 0.1f, 100.0f);
+		// Negate the camera target and use that as a LookAt so we're facing backwards
+		view = glm::lookAt(camera.GetPosition(), camera.GetPosition() + (-camera.GetTarget()), camera.GetUp());
+		model = glm::mat4(1.0f);
+		shader.setMatrix4f("projection", projection);
+		shader.setMatrix4f("view", view);
+		// cubes
+		glBindVertexArray(cubeVAO);
+		containerTexture.bind(GL_TEXTURE0);
+		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
+		shader.setMatrix4f("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+		shader.setMatrix4f("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		// floor
+		glBindVertexArray(planeVAO);
+		earthTexture.bind(GL_TEXTURE0);
+		model = glm::mat4(1.0f);
+		shader.setMatrix4f("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		// Drawing quads
+		glBindVertexArray(grassVAO);
+
+		// Grass
+		grassTexture.bind(GL_TEXTURE0);
+		for (auto index{0}; index < vegetation.size(); ++index) {
+			float distance{ glm::length(camera.GetPosition() - vegetation[index]) };
+			sortedPositions[distance] = vegetation[index];
+		}
+
+		for (auto iterator = sortedPositions.rbegin(); iterator != sortedPositions.rend(); ++iterator) {
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, iterator->second);
+			shader.setMatrix4f("model", model);
+			glDrawArrays(GL_TRIANGLES, 0 ,6);
+		}
+
+		// Third render pass
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -396,9 +453,21 @@ int main() {
 
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_BLEND);
-
+		
+		// Draw the original scene
 		glBindTexture(GL_TEXTURE_2D, frameBuffer.GetColorBuffer());
 		glDrawArrays(GL_TRIANGLES, 0, 6);
+		
+		// Transform the quad and draw the reversed scene
+		rearviewShader.use();
+		glBindTexture(GL_TEXTURE_2D, rearviewFrameBuffer.GetColorBuffer());
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 0.75f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.5f, 0.25f, 1.0f));
+		rearviewShader.setMatrix4f("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		
+
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

@@ -30,6 +30,9 @@ public: // Public Member Functions
 	glm::mat4 GetLookAt() const;
 	const glm::vec3& GetPosition() const;
 	const glm::vec3& GetTarget() const;
+
+	const glm::vec3& GetUp() const { return m_Cam.Up; }
+
 };
 
 #endif
