@@ -15,6 +15,7 @@ set(
 	"blending"
 	"culling"
 	"framebuffers"
+	"cubemaps"
 )
 
 foreach(TUTORIAL ${TUTORIALS})
