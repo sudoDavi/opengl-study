@@ -10,6 +10,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <stb_image.h>
 
 #include <iostream>
 #include <cstdlib>
@@ -222,11 +223,36 @@ int main() {
 	// Shaders
 	Shader shader { "shaders/basic-shader.vert", "shaders/blending.frag" };
 
-	// Textures
+	// 2D Textures
 	Texture grassTexture { "assets/grass.png", false, GL_CLAMP_TO_EDGE };
 	Texture containerTexture { "assets/container.jpeg", true, GL_CLAMP_TO_EDGE };
 	Texture earthTexture { "assets/earth.png", true };
 	Texture windowsTexture{ "assets/windows.png", false, GL_CLAMP_TO_EDGE };
+
+	// Cube map
+	// vector with paths for the textures
+	std::vector<std::string> textures_faces{};
+	
+	std::uint32_t cubemapId;
+	glGenTextures(1, &cubemapId);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
+	// Image data pointer
+	unsigned char *data;
+	// Image properties
+	int width, height, nrChannels;
+	for (auto index{0}; index < textures_faces.size(); ++index) {
+		data = stbi_load(textures_faces[index].c_str(), &widht, &height, &nrChannels, 0);
+		glTexImage2D(
+			GL_TEXTURE_CUBE_MAP_POSITIVE_X + index,
+			0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+		);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
 	
 	// Object Positions
 	std::vector<glm::vec3> vegetation;
