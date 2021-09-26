@@ -329,6 +329,7 @@ int main() {
 
 	// Depth testing
 	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
 
 	// Blending
 	glEnable(GL_BLEND);
@@ -357,17 +358,6 @@ int main() {
 		// CLEARS THE SCREEN
 		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// Draw the skybox
-		glDepthMask(GL_FALSE); // Disable Depth writing
-		cubemapShader.use();
-		cubemapShader.setMatrix4f("projection", projection);
-		cubemapShader.setMatrix4f("view", glm::mat4(glm::mat3(view)));
-		glBindVertexArray(cubeVAO);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapId);// bind the skybox texture
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glDepthMask(GL_TRUE);	
-		
 
 		// draw objects
 		glEnable(GL_DEPTH_TEST);
@@ -413,6 +403,16 @@ int main() {
 			shader.setMatrix4f("model", model);
 			glDrawArrays(GL_TRIANGLES, 0 ,6);
 		}
+
+		// Draw the skybox
+		glDepthMask(GL_FALSE); // Disable Depth writing
+		cubemapShader.use();
+		cubemapShader.setMatrix4f("projection", projection);
+		cubemapShader.setMatrix4f("view", glm::mat4(glm::mat3(view)));
+		glBindVertexArray(cubeVAO);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapId);// bind the skybox texture
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDepthMask(GL_TRUE);	
 		
 		glfwSwapBuffers(window);
 		glfwPollEvents();
