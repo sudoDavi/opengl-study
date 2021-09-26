@@ -218,10 +218,55 @@ int main() {
 		1.0f,  0.5f,  0.0f,  1.0f,  0.0f
 	};
 
+	float rcubeVertices[] = {
+	    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	     0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+	     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+	     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+	    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+	    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+
+	    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	     0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+
+	    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+	    -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+	    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+	    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+	    -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+	    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+
+	     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+	     0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+	     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+	     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+	     0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+	     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+
+	    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+	     0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+	     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+	     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+	    -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+	    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+
+	    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+	     0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+	     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+	     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+	    -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+	    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+	};
+
 	
 	// Shaders
 	Shader shader { "shaders/basic-shader.vert", "shaders/blending.frag" };
 	Shader cubemapShader { "shaders/skybox.vert", "shaders/skybox.frag" };
+	Shader reflectionShader { "shaders/reflection.vert", "shaders/reflection.frag" };
 
 	// 2D Textures
 	Texture grassTexture { "assets/grass.png", false, GL_CLAMP_TO_EDGE };
@@ -317,6 +362,18 @@ int main() {
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
+	// reflective cube VAO
+	std::uint32_t rcubeVAO,rcubeVBO;
+	glGenVertexArrays(1, &rcubeVAO);
+	glGenBuffers(1, &rcubeVBO);
+	glBindVertexArray(rcubeVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, rcubeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(rcubeVertices), &rcubeVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+
 
 	// Bind a GLFW callback to change the drawing mode
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
@@ -411,6 +468,19 @@ int main() {
 			shader.setMatrix4f("model", model);
 			glDrawArrays(GL_TRIANGLES, 0 ,6);
 		}
+
+		// Draw a reflective cube
+		glBindVertexArray(rcubeVAO);
+		reflectionShader.use();
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 2.0f, 0.0f));
+		reflectionShader.setMatrix4f("model", model);
+		reflectionShader.setMatrix4f("view", view);
+		reflectionShader.setMatrix4f("projection", projection);
+		reflectionShader.setVec3f("cameraPos", camera.GetPosition());
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapId);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
 
 
 		glfwSwapBuffers(window);
