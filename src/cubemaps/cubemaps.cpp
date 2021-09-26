@@ -10,7 +10,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <stb_image.h>
 
 #include <iostream>
 #include <cstdlib>
@@ -222,6 +221,7 @@ int main() {
 	
 	// Shaders
 	Shader shader { "shaders/basic-shader.vert", "shaders/blending.frag" };
+	Shader cubemapShader { "shaders/cubemap.vert", "shaders/cubemap.frag" };
 
 	// 2D Textures
 	Texture grassTexture { "assets/grass.png", false, GL_CLAMP_TO_EDGE };
@@ -231,21 +231,35 @@ int main() {
 
 	// Cube map
 	// vector with paths for the textures
-	std::vector<std::string> textures_faces{};
+	std::vector<std::string> textures_faces{
+		"assets/skybox/right.jpg",
+		"assets/skybox/left.jpg",
+		"assets/skybox/top.jpg",
+		"assets/skybox/bottom.jpg",
+		"assets/skybox/back.jpg",
+		"assets/skybox/front.jpg"
+	};
 	
 	std::uint32_t cubemapId;
 	glGenTextures(1, &cubemapId);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapId);
 	// Image data pointer
 	unsigned char *data;
 	// Image properties
 	int width, height, nrChannels;
 	for (auto index{0}; index < textures_faces.size(); ++index) {
-		data = stbi_load(textures_faces[index].c_str(), &widht, &height, &nrChannels, 0);
-		glTexImage2D(
-			GL_TEXTURE_CUBE_MAP_POSITIVE_X + index,
-			0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
-		);
+		data = stbi_load(textures_faces[index].c_str(), &width, &height, &nrChannels, 0);
+		if (data) {
+			glTexImage2D(
+				GL_TEXTURE_CUBE_MAP_POSITIVE_X + index,
+				0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+			);
+			stbi_image_free(data);
+		}
+		else {
+			std::cout << "ERROR::TEXTURE::CUBEMAP " << textures_faces[index] << std::endl;
+			stbi_image_free(data);
+		}
 	}
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -335,9 +349,25 @@ int main() {
 		movement(window, deltaTime, camera);
 		mouseDirection(window, camera);
 
+		// Create matrices
+		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom()), 800.0f / 600.0f, 0.1f, 100.0f);
+		glm::mat4 view = camera.GetLookAt();
+		glm::mat4 model = glm::mat4(1.0f);
+
 		// CLEARS THE SCREEN
 		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// Draw the skybox
+		glDepthMask(GL_FALSE); // Disable Depth writing
+		cubemapShader.use();
+		cubemapShader.setMatrix4f("projection", projection);
+		cubemapShader.setMatrix4f("view", glm::mat4(glm::mat3(view)));
+		glBindVertexArray(cubeVAO);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapId);// bind the skybox texture
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDepthMask(GL_TRUE);	
+		
 
 		// draw objects
 		glEnable(GL_DEPTH_TEST);
@@ -345,9 +375,6 @@ int main() {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		shader.use();
-		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom()), 800.0f / 600.0f, 0.1f, 100.0f);
-		glm::mat4 view = camera.GetLookAt();
-		glm::mat4 model = glm::mat4(1.0f);
 		shader.setMatrix4f("projection", projection);
 		shader.setMatrix4f("view", view);
 		// cubes
