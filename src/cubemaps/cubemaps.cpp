@@ -221,7 +221,7 @@ int main() {
 	
 	// Shaders
 	Shader shader { "shaders/basic-shader.vert", "shaders/blending.frag" };
-	Shader cubemapShader { "shaders/cubemap.vert", "shaders/cubemap.frag" };
+	Shader cubemapShader { "shaders/skybox.vert", "shaders/skybox.frag" };
 
 	// 2D Textures
 	Texture grassTexture { "assets/grass.png", false, GL_CLAMP_TO_EDGE };
@@ -384,9 +384,17 @@ int main() {
 		shader.setMatrix4f("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
+		// Draw the skybox
+		cubemapShader.use();
+		cubemapShader.setMatrix4f("projection", projection);
+		cubemapShader.setMatrix4f("view", glm::mat4(glm::mat3(view)));
+		glBindVertexArray(cubeVAO);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapId);// bind the skybox texture
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 		
 		// Drawing quads
 		glBindVertexArray(grassVAO);
+		shader.use();
 
 		// Grass
 		grassTexture.bind(GL_TEXTURE0);
@@ -404,16 +412,7 @@ int main() {
 			glDrawArrays(GL_TRIANGLES, 0 ,6);
 		}
 
-		// Draw the skybox
-		glDepthMask(GL_FALSE); // Disable Depth writing
-		cubemapShader.use();
-		cubemapShader.setMatrix4f("projection", projection);
-		cubemapShader.setMatrix4f("view", glm::mat4(glm::mat3(view)));
-		glBindVertexArray(cubeVAO);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapId);// bind the skybox texture
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glDepthMask(GL_TRUE);	
-		
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
