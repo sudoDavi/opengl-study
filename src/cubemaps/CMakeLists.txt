@@ -18,4 +18,4 @@ file(COPY ${ASSETS_DIR} DESTINATION "${PROJECT_BINARY_DIR}")
 add_executable(Cubemaps ${CXX_FILES})
 
 target_compile_options(Cubemaps PUBLIC -ggdb)
-target_link_libraries(Cubemaps PUBLIC glad glfw glm assimp)
+target_link_libraries(Cubemaps PUBLIC glad glfw glm assimp stb_image)

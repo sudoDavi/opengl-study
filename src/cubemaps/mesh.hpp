@@ -27,7 +27,7 @@ struct Vertex {
 		}
 };
 
-struct Texture {
+struct ITexture {
 	std::uint32_t Id;
 	std::string Type;
 	std::string Path;
@@ -38,10 +38,11 @@ class Mesh {
 	public:
 		std::vector<Vertex> Vertices;
 		std::vector<std::uint32_t> Indices;
-		std::vector<Texture> Textures;
+		std::vector<ITexture> Textures;
 
-		Mesh(std::vector<Vertex> &vertices, std::vector<std::uint32_t> &indices, std::vector<Texture> &textures);
+		Mesh(std::vector<Vertex> &vertices, std::vector<std::uint32_t> &indices, std::vector<ITexture> &textures);
 		void Draw(Shader& shader);
+		void Draw();
 	private:
 		// OpenGL Data;
 		std::uint32_t VAO, VBO, EBO;

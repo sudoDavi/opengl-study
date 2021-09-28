@@ -1,10 +1,11 @@
 #include "constants.hpp"
 #include "shader.hpp"
-#define STB_IMAGE_IMPLEMENTATION
 #include "flycam.hpp"
 #include "texture.hpp"
 #include "framebuffer.hpp"
+#include "model.hpp"
 
+#include <stb_image.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -266,7 +267,10 @@ int main() {
 	// Shaders
 	Shader shader { "shaders/basic-shader.vert", "shaders/blending.frag" };
 	Shader cubemapShader { "shaders/skybox.vert", "shaders/skybox.frag" };
-	Shader reflectionShader { "shaders/reflection.vert", "shaders/reflection.frag" };
+	Shader refractionShader { "shaders/refraction.vert", "shaders/refraction.frag" };
+
+	// Models
+	Model backpack { "assets/backpack/backpack.obj" };
 
 	// 2D Textures
 	Texture grassTexture { "assets/grass.png", false, GL_CLAMP_TO_EDGE };
@@ -470,16 +474,15 @@ int main() {
 		}
 
 		// Draw a reflective cube
-		glBindVertexArray(rcubeVAO);
-		reflectionShader.use();
+		refractionShader.use();
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 2.0f, 0.0f));
-		reflectionShader.setMatrix4f("model", model);
-		reflectionShader.setMatrix4f("view", view);
-		reflectionShader.setMatrix4f("projection", projection);
-		reflectionShader.setVec3f("cameraPos", camera.GetPosition());
+		refractionShader.setMatrix4f("model", model);
+		refractionShader.setMatrix4f("view", view);
+		refractionShader.setMatrix4f("projection", projection);
+		refractionShader.setVec3f("cameraPos", camera.GetPosition());
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapId);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		backpack.Draw();
 
 
 

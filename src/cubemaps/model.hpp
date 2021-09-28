@@ -19,14 +19,15 @@ class Model {
 	public:
 		Model(const std::string &path);
 		void Draw(Shader &shader);
+		void Draw();
 	private:
 		std::vector<Mesh> meshes;
 		std::string directory;
-		std::vector<Texture> textures_loaded;
+		std::vector<ITexture> textures_loaded;
 
 		void loadModel(const std::string &path);
 		void processNode(aiNode *node, const aiScene *scene);
 		Mesh processMesh(aiMesh *mesh, const aiScene *scene);
-		std::vector<Texture> loadMaterialTextures(aiMaterial *mat, const aiTextureType &type, const std::string &typeName);
+		std::vector<ITexture> loadMaterialTextures(aiMaterial *mat, const aiTextureType &type, const std::string &typeName);
 };
 #endif

@@ -9,6 +9,11 @@ void Model::Draw(Shader &shader) {
 		meshes[index].Draw(shader);
 }
 
+void Model::Draw() {
+	for (auto index{ 0 }; index < meshes.size(); ++index)
+		meshes[index].Draw();
+}
+
 void Model::loadModel(const std::string &path) {
 	Assimp::Importer import;
 	const aiScene *scene{ import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_FlipUVs
@@ -72,8 +77,8 @@ std::uint32_t TextureFromFile(const char *path, const std::string &directory, bo
 	return textureID;
 }
 
-std::vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, const aiTextureType &type, const std::string &typeName) {
-	std::vector<Texture> textures;
+std::vector<ITexture> Model::loadMaterialTextures(aiMaterial *mat, const aiTextureType &type, const std::string &typeName) {
+	std::vector<ITexture> textures;
 	for (auto index{0}; index < mat->GetTextureCount(type); ++index) {
 		aiString str;
 		mat->GetTexture(type, index, &str);
@@ -87,7 +92,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, const aiTextur
 			}
 		}
 		if (!skipLoading) {
-			Texture texture;
+			ITexture texture;
 		       	texture.Id = TextureFromFile(str.C_Str(), this->directory);
 			texture.Type = typeName;
 			texture.Path = str.C_Str();
@@ -102,7 +107,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, const aiTextur
 Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
 	std::vector<Vertex> vertices;
 	std::vector<std::uint32_t> indices;
-	std::vector<Texture> textures;
+	std::vector<ITexture> textures;
 
 	for (auto index{0}; index <mesh->mNumVertices; ++index) {
 		Vertex vertex;
@@ -151,16 +156,16 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
 
 	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
-	std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+	std::vector<ITexture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
 	textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 
-	std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+	std::vector<ITexture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 	textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 
-	std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
+	std::vector<ITexture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
 	textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 
-	std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
+	std::vector<ITexture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
 	textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
 	return Mesh(vertices, indices, textures);

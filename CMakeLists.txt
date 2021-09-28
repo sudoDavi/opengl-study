@@ -21,8 +21,11 @@ add_subdirectory(lib/glad)
 # Add GLM
 add_subdirectory(lib/glm)
 
-# Add all header files inside lib/
-include_directories(lib)
+# Add STB_IMAGE
+add_subdirectory(lib/stb_image)
+
+# Add all the header files inside lib
+include_directories(lib/)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)

@@ -1,6 +1,6 @@
 #include "mesh.hpp"
 
-Mesh::Mesh(std::vector<Vertex> &vertices, std::vector<std::uint32_t> &indices, std::vector<Texture> &textures)
+Mesh::Mesh(std::vector<Vertex> &vertices, std::vector<std::uint32_t> &indices, std::vector<ITexture> &textures)
 	: Vertices{ vertices }, Indices{ indices }, Textures{ textures }
 	{
 		setupMesh();
@@ -36,6 +36,8 @@ void Mesh::Draw(Shader &shader) {
 	std::uint32_t diffuseNr{ 1 };
 	std::uint32_t specularNr{ 1 };
 
+	shader.use();
+
 	for (auto index{ 0 }; index < Textures.size(); ++index) {
 		glActiveTexture(GL_TEXTURE0 + index); // Activate proper texture unit before binding
 		std::string number;
@@ -57,3 +59,9 @@ void Mesh::Draw(Shader &shader) {
 	glBindVertexArray(0);
 }
 
+void Mesh::Draw() {
+	// Actually Draw the mesh
+	glBindVertexArray(VAO);
+	glDrawElements(GL_TRIANGLES, Indices.size(), GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
+}
