@@ -16,6 +16,7 @@ set(
 	"culling"
 	"framebuffers"
 	"cubemaps"
+	"uniform-buffer"
 )
 
 foreach(TUTORIAL ${TUTORIALS})
