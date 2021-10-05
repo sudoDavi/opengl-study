@@ -17,6 +17,7 @@ set(
 	"framebuffers"
 	"cubemaps"
 	"uniform-buffer"
+	"geometry-shaders"
 )
 
 foreach(TUTORIAL ${TUTORIALS})
