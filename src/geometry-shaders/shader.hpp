@@ -13,9 +13,12 @@
 
 class Shader {
 private:
-	// Verify the compilation of both the vertex and fragment shaders
+	bool m_hasGeometryShader{ false };
+private:
+	// Verify the compilation of both the shaders
 	// RETURNS TRUE if compilation was a SUCCESS
 	bool verifyCompilation(std::uint32_t vertexShaderId, std::uint32_t fragmentShaderId);
+	bool verifyCompilation(std::uint32_t vertexShaderId, std::uint32_t geometryShaderId, std::uint32_t fragmentShaderId);
 	// Verify the linking of the shader program
 	// RETURNS TRUE if linking was a SUCCESS
 	bool verifyLinking();
@@ -24,6 +27,7 @@ public:
 	std::uint32_t Id{};
 	// Read and build the shader
 	Shader(const std::string &vertexPath, const std::string &fragmentPath);
+	Shader(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath);
 	// Activate the shader
 	void use() const;
 	// utility uniform functions

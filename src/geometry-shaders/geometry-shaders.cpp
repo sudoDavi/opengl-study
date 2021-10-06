@@ -142,12 +142,12 @@ int main() {
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
 
 	// Capture the mouse
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	// Bind callback to Scroll Input
 	glfwSetScrollCallback(window, scrollHandle);
 
-	Shader shader{ "shaders/basic-shader.vert", "shaders/basic-shader.frag" };
+	Shader shader{ "shaders/basic-shader.vert", "shaders/basic-shader.geometry", "shaders/basic-shader.frag" };
 
 	// Point data
 	float points[] = {
