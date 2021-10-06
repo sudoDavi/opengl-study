@@ -18,4 +18,4 @@ file(COPY ${ASSETS_DIR} DESTINATION "${PROJECT_BINARY_DIR}")
 add_executable(Stencil_Testing ${CXX_FILES})
 
 target_compile_options(Stencil_Testing PUBLIC -ggdb)
-target_link_libraries(Stencil_Testing PUBLIC glad glfw glm assimp)
+target_link_libraries(Stencil_Testing PUBLIC glad glfw glm assimp stb_image)

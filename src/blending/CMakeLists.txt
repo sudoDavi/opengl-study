@@ -18,4 +18,4 @@ file(COPY ${ASSETS_DIR} DESTINATION "${PROJECT_BINARY_DIR}")
 add_executable(Blending ${CXX_FILES})
 
 target_compile_options(Blending PUBLIC -ggdb)
-target_link_libraries(Blending PUBLIC glad glfw glm assimp)
+target_link_libraries(Blending PUBLIC glad glfw glm assimp stb_image)

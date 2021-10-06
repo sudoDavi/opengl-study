@@ -18,4 +18,4 @@ file(COPY ${ASSETS_DIR} DESTINATION "${PROJECT_BINARY_DIR}")
 add_executable(Materials ${CXX_FILES})
 
 target_compile_options(Materials PUBLIC -ggdb)
-target_link_libraries(Materials PUBLIC glad glfw glm)
+target_link_libraries(Materials PUBLIC glad glfw glm stb_image)

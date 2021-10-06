@@ -18,4 +18,4 @@ file(COPY ${ASSETS_DIR} DESTINATION "${PROJECT_BINARY_DIR}")
 add_executable(Culling ${CXX_FILES})
 
 target_compile_options(Culling PUBLIC -ggdb)
-target_link_libraries(Culling PUBLIC glad glfw glm assimp)
+target_link_libraries(Culling PUBLIC glad glfw glm assimp stb_image)

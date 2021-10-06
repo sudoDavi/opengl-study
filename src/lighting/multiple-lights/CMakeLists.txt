@@ -18,4 +18,4 @@ file(COPY ${ASSETS_DIR} DESTINATION "${PROJECT_BINARY_DIR}")
 add_executable(Multiple_Lights ${CXX_FILES})
 
 target_compile_options(Multiple_Lights PUBLIC -ggdb)
-target_link_libraries(Multiple_Lights PUBLIC glad glfw glm)
+target_link_libraries(Multiple_Lights PUBLIC glad glfw glm stb_image)

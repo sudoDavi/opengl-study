@@ -18,4 +18,4 @@ file(COPY ${ASSETS_DIR} DESTINATION "${PROJECT_BINARY_DIR}")
 add_executable(Camera ${CXX_FILES})
 
 target_compile_options(Camera PUBLIC -ggdb)
-target_link_libraries(Camera PUBLIC glad glfw glm)
+target_link_libraries(Camera PUBLIC glad glfw glm stb_image)

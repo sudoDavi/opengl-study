@@ -18,4 +18,4 @@ file(COPY ${ASSETS_DIR} DESTINATION "${PROJECT_BINARY_DIR}")
 add_executable(Depth_Testing ${CXX_FILES})
 
 target_compile_options(Depth_Testing PUBLIC -ggdb)
-target_link_libraries(Depth_Testing PUBLIC glad glfw glm assimp)
+target_link_libraries(Depth_Testing PUBLIC glad glfw glm assimp stb_image)

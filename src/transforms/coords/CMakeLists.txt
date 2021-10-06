@@ -18,4 +18,4 @@ file(COPY ${ASSETS_DIR} DESTINATION "${PROJECT_BINARY_DIR}")
 add_executable(Coordinates ${CXX_FILES})
 
 target_compile_options(Coordinates PUBLIC -ggdb)
-target_link_libraries(Coordinates PUBLIC glad glfw glm)
+target_link_libraries(Coordinates PUBLIC glad glfw glm stb_image)
