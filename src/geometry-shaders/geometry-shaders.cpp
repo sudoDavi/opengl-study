@@ -147,7 +147,7 @@ int main() {
 	// Bind callback to Scroll Input
 	glfwSetScrollCallback(window, scrollHandle);
 
-	Shader shader{ "shaders/basic-shader.vert", "shaders/basic-shader.geometry", "shaders/basic-shader.frag" };
+	Shader shader{ "shaders/basic-shader.vert", "shaders/exploding.geometry", "shaders/basic-shader.frag" };
 
 	// Point data
 	float points[] = {
@@ -167,6 +167,10 @@ int main() {
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
+
+	stbi_set_flip_vertically_on_load(true);
+	// Load the model, we need to flip the textures before though
+	Model backpack{ "assets/backpack/backpack.obj" };
 
 	// Depth testing
 	glEnable(GL_DEPTH_TEST);
@@ -204,8 +208,11 @@ int main() {
 		glEnable(GL_DEPTH_TEST);
 		
 		shader.use();
-		glBindVertexArray(pointsVAO);
-		glDrawArrays(GL_POINTS, 0, 4);
+		shader.setMatrix4f("model", model);
+		shader.setMatrix4f("view", view);
+		shader.setMatrix4f("projection", projection);
+		shader.setVec1f("time", currentFrame);
+		backpack.Draw(shader);
 
 
 		glfwSwapBuffers(window);
