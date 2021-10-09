@@ -142,31 +142,14 @@ int main() {
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
 
 	// Capture the mouse
-	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	// Bind callback to Scroll Input
 	glfwSetScrollCallback(window, scrollHandle);
 
-	Shader shader{ "shaders/basic-shader.vert", "shaders/exploding.geometry", "shaders/basic-shader.frag" };
-
-	// Point data
-	float points[] = {
-	    -0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // top-left
-	     0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // top-right
-	     0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // bottom-right
-	    -0.5f, -0.5f, 1.0f, 1.0f, 0.0f  // bottom-left
-	}; 
-
-	std::uint32_t pointsVAO, pointsVBO;
-	glGenVertexArrays(1, &pointsVAO);
-	glGenBuffers(1, &pointsVBO);
-	glBindVertexArray(pointsVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, pointsVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(points), &points, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
+	Shader shader{ "shaders/basic-shader.vert", "shaders/basic-shader.frag" };
+	std::cout << "Compiled shader\n";
+	Shader normalDisplayShader { "shaders/normal-display.vert", "shaders/normal-display.geometry", "shaders/normal-display.frag" };
 
 	stbi_set_flip_vertically_on_load(true);
 	// Load the model, we need to flip the textures before though
@@ -211,8 +194,13 @@ int main() {
 		shader.setMatrix4f("model", model);
 		shader.setMatrix4f("view", view);
 		shader.setMatrix4f("projection", projection);
-		shader.setVec1f("time", currentFrame);
 		backpack.Draw(shader);
+
+		normalDisplayShader.use();
+		normalDisplayShader.setMatrix4f("model", model);
+		normalDisplayShader.setMatrix4f("view", view);
+		normalDisplayShader.setMatrix4f("projection", projection);
+		backpack.Draw(normalDisplayShader);
 
 
 		glfwSwapBuffers(window);
