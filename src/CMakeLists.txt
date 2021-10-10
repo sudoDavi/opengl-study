@@ -18,6 +18,7 @@ set(
 	"cubemaps"
 	"uniform-buffer"
 	"geometry-shaders"
+	"instancing"
 )
 
 foreach(TUTORIAL ${TUTORIALS})
