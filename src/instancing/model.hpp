@@ -20,10 +20,11 @@ class Model {
 		Model(const std::string &path);
 		void Draw(Shader &shader);
 		void Draw();
+	public:
+		std::vector<Mesh> meshes; // Changed the access modifier for the instancing tutorial
+		std::vector<ITexture> textures_loaded; // Changed the access modifier for the instancing tutorial
 	private:
-		std::vector<Mesh> meshes;
 		std::string directory;
-		std::vector<ITexture> textures_loaded;
 
 		void loadModel(const std::string &path);
 		void processNode(aiNode *node, const aiScene *scene);

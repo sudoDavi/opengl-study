@@ -39,13 +39,14 @@ class Mesh {
 		std::vector<Vertex> Vertices;
 		std::vector<std::uint32_t> Indices;
 		std::vector<ITexture> Textures;
+		std::uint32_t VAO; // Changed the access modifier of the VAO ID for the instancing tutorial
 
 		Mesh(std::vector<Vertex> &vertices, std::vector<std::uint32_t> &indices, std::vector<ITexture> &textures);
 		void Draw(Shader& shader);
 		void Draw();
 	private:
 		// OpenGL Data;
-		std::uint32_t VAO, VBO, EBO;
+		std::uint32_t VBO, EBO;
 
 		void setupMesh();
 };

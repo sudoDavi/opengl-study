@@ -148,12 +148,12 @@ int main() {
 	glfwSetScrollCallback(window, scrollHandle);
 
 	// Asteroids
-	std::uint32_t amount{ 1000 };
+	std::uint32_t amount{ 10000 };
 	glm::mat4 *modelMatrices;
 	modelMatrices = new glm::mat4[amount];
 	srand(glfwGetTime()); // Initialize rng
-	float radius{ 50.0f };
-	float offset{ 2.5f };
+	float radius{ 40.0f };
+	float offset{ 10.5f };
 	for (auto i{0}; i < amount; ++i) {
 		glm::mat4 model = glm::mat4(1.0f);
 
@@ -183,8 +183,38 @@ int main() {
 	Model asteroid{ "assets/rock/rock.obj" };
 	Model planet{ "assets/planet/planet.obj" };
 
-	// Instancing Shader
+	// Instancing Data
+	std::uint32_t instancingBuffer;
+	glGenBuffers(1, &instancingBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, instancingBuffer);
+	glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &modelMatrices[0], GL_STATIC_DRAW);
+
+	for (auto i{0}; i < asteroid.meshes.size(); ++i) {
+		auto VAO{ asteroid.meshes[i].VAO };
+		glBindVertexArray(VAO);
+		
+		auto vec4Size = sizeof(glm::vec4);
+		glEnableVertexAttribArray(3);
+		glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)0);
+		glEnableVertexAttribArray(4);
+		glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(1 * vec4Size));
+		glEnableVertexAttribArray(5);
+		glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(2 * vec4Size));
+		glEnableVertexAttribArray(6);
+		glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(3 * vec4Size));
+
+		glVertexAttribDivisor(3, 1);
+		glVertexAttribDivisor(4, 1);
+		glVertexAttribDivisor(5, 1);
+		glVertexAttribDivisor(6, 1);
+
+		glBindVertexArray(0);
+	}
+		
+
+	// Shaders
 	Shader shader{ "shaders/basic-shader.vert", "shaders/basic-shader.frag" };
+	Shader instancingShader{ "shaders/instancing-shader.vert", "shaders/basic-shader.frag" };
 
 	// Depth testing
 	glEnable(GL_DEPTH_TEST);
@@ -230,10 +260,18 @@ int main() {
 		shader.setMatrix4f("projection", projection);
 		planet.Draw(shader);
 
-		// Drawing 1000 asteroids
-		for (auto i{0}; i < amount; ++i) {
-			shader.setMatrix4f("model", modelMatrices[i]);
-			asteroid.Draw(shader);
+		// Drawing the instanced asteroids
+		instancingShader.use();
+		instancingShader.setMatrix4f("view", view);
+		instancingShader.setMatrix4f("projection", projection);
+		instancingShader.setVec1i("texture_diffuse1", 0);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, asteroid.textures_loaded[0].Id);
+		for (auto i{0}; i < asteroid.meshes.size(); ++i) {
+			glBindVertexArray(asteroid.meshes[i].VAO);
+			glDrawElementsInstanced(
+				GL_TRIANGLES, asteroid.meshes[i].Indices.size(), GL_UNSIGNED_INT, 0, amount
+				);	
 		}
 
 		glfwSwapBuffers(window);
