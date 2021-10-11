@@ -147,53 +147,41 @@ int main() {
 	// Bind callback to Scroll Input
 	glfwSetScrollCallback(window, scrollHandle);
 
+	// Asteroids
+	std::uint32_t amount{ 1000 };
+	glm::mat4 *modelMatrices;
+	modelMatrices = new glm::mat4[amount];
+	srand(glfwGetTime()); // Initialize rng
+	float radius{ 50.0f };
+	float offset{ 2.5f };
+	for (auto i{0}; i < amount; ++i) {
+		glm::mat4 model = glm::mat4(1.0f);
 
-	float quadVertices[] = {
-	    // positions     // colors
-	    -0.05f,  0.05f,  1.0f, 0.0f, 0.0f,
-	     0.05f, -0.05f,  0.0f, 1.0f, 0.0f,
-	    -0.05f, -0.05f,  0.0f, 0.0f, 1.0f,
+		// Translation : displace along circle with radius in range [-offset, offset]
+		float angle{ (float)i / (float)amount * 360.0f };
+		float displacement{ (rand() % (int)(2 * offset * 100)) / 100.0f - offset };
+		float x{ sin(angle) * radius + displacement };
+		displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+		float y{ displacement * 0.4f }; // keep height of field smaller compared to the size of x and z
+		displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+		float z{ cos(angle) * radius + displacement };
 
-	    -0.05f,  0.05f,  1.0f, 0.0f, 0.0f,
-	     0.05f, -0.05f,  0.0f, 1.0f, 0.0f,   
-	     0.05f,  0.05f,  0.0f, 1.0f, 1.0f		    		
-	};
+		model = glm::translate(model, glm::vec3(x, y, z));
 
-	glm::vec2 translations[100];
-	int index{ 0 };
-	float offset{ 0.1f };
-	for (int y {-10}; y < 10; y += 2) {
-		for (int x{-10}; x < 10; x += 2) {
-			glm::vec2 translation;
-			translation.x = (float)x / 10.0f + offset;
-			translation.y = (float)y / 10.0f + offset;
-			translations[index++] = translation;
-		}
+		// Scale
+		float scale{ (rand() % 20) / 100.0f + 0.05f };
+		model = glm::scale(model, glm::vec3(scale));
+
+		// Rotation
+		float rotAngle{ rand() % 360 };
+		model = glm::rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
+
+		modelMatrices[i] = model;
 	}
 
-	
-	
-	// Quads VBO and VAO
-	std::uint32_t quadsVBO, quadsVAO;
-	glGenVertexArrays(1, &quadsVAO);
-	glGenBuffers(1, &quadsVBO);
-	glBindVertexArray(quadsVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, quadsVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
-
-	// Instancing VBO
-	std::uint32_t instanceVBO;
-	glGenBuffers(1, &instanceVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, &translations[0], GL_STATIC_DRAW);
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glVertexAttribDivisor(2, 1);
+	// Models
+	Model asteroid{ "assets/rock/rock.obj" };
+	Model planet{ "assets/planet/planet.obj" };
 
 	// Instancing Shader
 	Shader shader{ "shaders/basic-shader.vert", "shaders/basic-shader.frag" };
@@ -233,13 +221,27 @@ int main() {
 		// draw objects
 		glEnable(GL_DEPTH_TEST);
 		
+		// Drawing planet
 		shader.use();
-		glBindVertexArray(quadsVAO);
-		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 100);
+		model = glm::translate(model, glm::vec3(0.0f, -3.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(4.0f, 4.0f, 4.0f));
+		shader.setMatrix4f("model", model);
+		shader.setMatrix4f("view", view);
+		shader.setMatrix4f("projection", projection);
+		planet.Draw(shader);
+
+		// Drawing 1000 asteroids
+		for (auto i{0}; i < amount; ++i) {
+			shader.setMatrix4f("model", modelMatrices[i]);
+			asteroid.Draw(shader);
+		}
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+
+	// Application will close, so we need to clean up
+	delete[] modelMatrices;
 
 	glfwTerminate();
 	return 0;
