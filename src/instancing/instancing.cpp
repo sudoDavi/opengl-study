@@ -159,21 +159,6 @@ int main() {
 	     0.05f,  0.05f,  0.0f, 1.0f, 1.0f		    		
 	};
 
-	std::uint32_t quadsVBO, quadsVAO;
-	glGenVertexArrays(1, &quadsVAO);
-	glGenBuffers(1, &quadsVBO);
-	glBindVertexArray(quadsVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, quadsVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
-
-	// Instancing Shader
-	Shader shader{ "shaders/basic-shader.vert", "shaders/basic-shader.frag" };
-
-
 	glm::vec2 translations[100];
 	int index{ 0 };
 	float offset{ 0.1f };
@@ -186,10 +171,32 @@ int main() {
 		}
 	}
 
-	shader.use();
-	for (std::uint32_t i{0}; i < 100; ++i)
-		shader.setVec2f(("offsets[" + std::to_string(i) + "]"), translations[i]);
 	
+	
+	// Quads VBO and VAO
+	std::uint32_t quadsVBO, quadsVAO;
+	glGenVertexArrays(1, &quadsVAO);
+	glGenBuffers(1, &quadsVBO);
+	glBindVertexArray(quadsVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, quadsVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
+
+	// Instancing VBO
+	std::uint32_t instanceVBO;
+	glGenBuffers(1, &instanceVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, &translations[0], GL_STATIC_DRAW);
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glVertexAttribDivisor(2, 1);
+
+	// Instancing Shader
+	Shader shader{ "shaders/basic-shader.vert", "shaders/basic-shader.frag" };
 
 	// Depth testing
 	glEnable(GL_DEPTH_TEST);
