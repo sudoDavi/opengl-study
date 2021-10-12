@@ -19,6 +19,7 @@ set(
 	"uniform-buffer"
 	"geometry-shaders"
 	"instancing"
+	"anti-aliasing"
 )
 
 foreach(TUTORIAL ${TUTORIALS})
