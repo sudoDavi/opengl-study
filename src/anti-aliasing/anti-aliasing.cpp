@@ -217,6 +217,9 @@ int main() {
 	Shader shader{ "shaders/basic-shader.vert", "shaders/basic-shader.frag" };
 	Shader instancingShader{ "shaders/instancing-shader.vert", "shaders/basic-shader.frag" };
 
+	// Multisample framebuffer
+	Framebuffer multisampleFB{ true, true, Framebuffer::AttachTyp::RenderBuffer, 4 };
+
 	// Depth testing
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
@@ -248,6 +251,9 @@ int main() {
 		glm::mat4 view = camera.GetLookAt();
 		glm::mat4 model = glm::mat4(1.0f);
 
+		// Bind multisample framebuffer
+		multisampleFB.Bind();
+
 		// CLEARS THE SCREEN
 		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -277,6 +283,10 @@ int main() {
 				GL_TRIANGLES, asteroid.meshes[i].Indices.size(), GL_UNSIGNED_INT, 0, amount
 				);	
 		}
+
+		multisampleFB.Bind(GL_READ_FRAMEBUFFER);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		glBlitFramebuffer(0, 0, 800, 600, 0, 0, 800, 600, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

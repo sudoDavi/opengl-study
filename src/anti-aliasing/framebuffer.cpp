@@ -1,13 +1,13 @@
 #include "framebuffer.hpp"
 
-Framebuffer::Framebuffer(bool createDepthBuffer, bool createStencilBuffer, Framebuffer::AttachTyp attachmentType)
-	: AttachmentType{ attachmentType }
+Framebuffer::Framebuffer(bool createDepthBuffer, bool createStencilBuffer, Framebuffer::AttachTyp attachmentType, std::uint32_t nmrSamples)
+	: AttachmentType{ attachmentType }, NmrSamples{ nmrSamples }
 {
 	glGenFramebuffers(1, &Id);
 	glBindFramebuffer(GL_FRAMEBUFFER, Id);
 
-	CreateBuffer(BufferType::Color);
-	AttachBuffer(BufferType::Color);
+	CreateBuffer(BufferType::Color, nmrSamples);
+	AttachBuffer(BufferType::Color, nmrSamples);
 
 
 	if (createDepthBuffer && createStencilBuffer) {
@@ -30,116 +30,230 @@ Framebuffer::Framebuffer(bool createDepthBuffer, bool createStencilBuffer, Frame
 
 }
 
-void Framebuffer::AttachBuffer(BufferType type) {
-	if (AttachmentType == Framebuffer::AttachTyp::Texture) {
+void Framebuffer::AttachBuffer(BufferType type, std::uint32_t nmrSamples) {
+	if (nmrSamples > 1) {
+		if (AttachmentType == Framebuffer::AttachTyp::Texture) {
 		switch (type) {
 			case BufferType::Color :
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer, 0);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, m_colorBuffer, 0);
 				break;
 			case BufferType::Depth :
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthBuffer, 0);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, m_depthBuffer, 0);
 				break;
 			case BufferType::Stencil :
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_stencilBuffer, 0);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, m_stencilBuffer, 0);
 				break;
 			case BufferType::DepthStencil :
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_depthBuffer, 0);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, m_depthBuffer, 0);
 				break;
 			default:
 				std::cout << "ERROR::FRAMEBUFFER::INVALID_BUFFERTYPE\n";
 		}
+		}
+		else if (AttachmentType == Framebuffer::AttachTyp::RenderBuffer) {
+			switch (type) {
+				case BufferType::Color :
+					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, m_colorBuffer, 0);
+					break;
+				case BufferType::Depth :
+					glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depthBuffer);
+					break;
+				case BufferType::Stencil :
+					glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_stencilBuffer);
+					break;
+				case BufferType::DepthStencil :
+					glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depthBuffer);
+					break;
+				default:
+					std::cout << "ERROR::FRAMEBUFFER::INVALID_BUFFERTYPE\n";
+			}
+		}
 	}
-	else if (AttachmentType == Framebuffer::AttachTyp::RenderBuffer) {
-		switch (type) {
-			case BufferType::Color :
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer, 0);
-				break;
-			case BufferType::Depth :
-				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depthBuffer);
-				break;
-			case BufferType::Stencil :
-				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_stencilBuffer);
-				break;
-			case BufferType::DepthStencil :
-				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depthBuffer);
-				break;
-			default:
-				std::cout << "ERROR::FRAMEBUFFER::INVALID_BUFFERTYPE\n";
+	else {
+		if (AttachmentType == Framebuffer::AttachTyp::Texture) {
+			switch (type) {
+				case BufferType::Color :
+					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer, 0);
+					break;
+				case BufferType::Depth :
+					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthBuffer, 0);
+					break;
+				case BufferType::Stencil :
+					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_stencilBuffer, 0);
+					break;
+				case BufferType::DepthStencil :
+					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_depthBuffer, 0);
+					break;
+				default:
+					std::cout << "ERROR::FRAMEBUFFER::INVALID_BUFFERTYPE\n";
+			}
+		}
+		else if (AttachmentType == Framebuffer::AttachTyp::RenderBuffer) {
+			switch (type) {
+				case BufferType::Color :
+					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer, 0);
+					break;
+				case BufferType::Depth :
+					glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depthBuffer);
+					break;
+				case BufferType::Stencil :
+					glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_stencilBuffer);
+					break;
+				case BufferType::DepthStencil :
+					glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depthBuffer);
+					break;
+				default:
+					std::cout << "ERROR::FRAMEBUFFER::INVALID_BUFFERTYPE\n";
+			}
 		}
 	}
 }
 
 
 
-void Framebuffer::CreateBuffer(Framebuffer::BufferType type) {
-	if ( AttachmentType == Framebuffer::AttachTyp::Texture) {
-		switch (type) {
-			case BufferType::Color :
-				glGenTextures(1, &m_colorBuffer);
-				glBindTexture(GL_TEXTURE_2D, m_colorBuffer);
+void Framebuffer::CreateBuffer(Framebuffer::BufferType type, std::uint32_t nmrSamples) {
+	if (nmrSamples > 1) {
+		if (AttachmentType == Framebuffer::AttachTyp::Texture) {
+			switch (type) {
+				case BufferType::Color :
+					glGenTextures(1, &m_colorBuffer);
+					glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_colorBuffer);
 
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+					glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, nmrSamples, GL_RGB, 800, 600, GL_TRUE);
 
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				break;
-			case BufferType::Stencil :
-				glGenTextures(1, &m_stencilBuffer);
-				glBindTexture(GL_TEXTURE_2D, m_stencilBuffer);
+					glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+					glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+					break;
+				case BufferType::Stencil :
+					glGenTextures(1, &m_stencilBuffer);
+					glBindTexture(GL_TEXTURE_2D, m_stencilBuffer);
 
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_STENCIL_INDEX, 800, 600, 0, GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, NULL);
-				break;
-			case BufferType::Depth :
-				glGenTextures(1, &m_depthBuffer);
-				glBindTexture(GL_TEXTURE_2D, m_depthBuffer);
+					glTexImage2D(GL_TEXTURE_2D, 0, GL_STENCIL_INDEX, 800, 600, 0, GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, NULL);
+					break;
+				case BufferType::Depth :
+					glGenTextures(1, &m_depthBuffer);
+					glBindTexture(GL_TEXTURE_2D, m_depthBuffer);
 
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 800, 600, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
-				break;
-			case BufferType::DepthStencil :
-				m_combinedBuffers = true;
+					glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 800, 600, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
+					break;
+				case BufferType::DepthStencil :
+					m_combinedBuffers = true;
 
-				glGenTextures(1, &m_depthBuffer);
-				glBindTexture(GL_TEXTURE_2D, m_depthBuffer);
+					glGenTextures(1, &m_depthBuffer);
+					glBindTexture(GL_TEXTURE_2D, m_depthBuffer);
 
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, 800, 600, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
-				break;
-			default:
-				std::cout << "ERROR::FRAMEBUFFER::INVALID_BUFFERTYPE\n";
+					glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, 800, 600, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
+					break;
+				default:
+					std::cout << "ERROR::FRAMEBUFFER::INVALID_BUFFERTYPE\n";
+			}
+		}
+		else if (AttachmentType == Framebuffer::AttachTyp::RenderBuffer) {
+			switch (type) {
+				case BufferType::Color :
+					glGenTextures(1, &m_colorBuffer);
+					glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_colorBuffer);
+
+					glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, nmrSamples, GL_RGB, 800, 600, GL_TRUE);
+
+					glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+					glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+					break;
+				case BufferType::Stencil :
+					glGenRenderbuffers(1, &m_stencilBuffer);
+					glBindRenderbuffer(GL_RENDERBUFFER, m_stencilBuffer);
+
+					glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX, 800, 600);
+					break;
+				case BufferType::Depth :
+					glGenRenderbuffers(1, &m_depthBuffer);
+					glBindRenderbuffer(GL_RENDERBUFFER, m_depthBuffer);
+
+					glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 800, 600);
+					break;
+				case BufferType::DepthStencil :
+					m_combinedBuffers = true;
+
+					glGenRenderbuffers(1, &m_depthBuffer);
+					glBindRenderbuffer(GL_RENDERBUFFER, m_depthBuffer);
+
+					glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8, 800, 600);
+					break;
+				default:
+					std::cout << "ERROR::FRAMEBUFFER::INVALID_BUFFERTYPE\n";
+			}
 		}
 	}
-	else if (AttachmentType == Framebuffer::AttachTyp::RenderBuffer) {
-		switch (type) {
-			case BufferType::Color :
-				glGenTextures(1, &m_colorBuffer);
-				glBindTexture(GL_TEXTURE_2D, m_colorBuffer);
+	else {
+		if (AttachmentType == Framebuffer::AttachTyp::Texture) {
+			switch (type) {
+				case BufferType::Color :
+					glGenTextures(1, &m_colorBuffer);
+					glBindTexture(GL_TEXTURE_2D, m_colorBuffer);
 
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+					glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				break;
-			case BufferType::Stencil :
-				glGenRenderbuffers(1, &m_stencilBuffer);
-				glBindRenderbuffer(GL_RENDERBUFFER, m_stencilBuffer);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+					break;
+				case BufferType::Stencil :
+					glGenTextures(1, &m_stencilBuffer);
+					glBindTexture(GL_TEXTURE_2D, m_stencilBuffer);
 
-				glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX, 800, 600);
-				break;
-			case BufferType::Depth :
-				glGenRenderbuffers(1, &m_depthBuffer);
-				glBindRenderbuffer(GL_RENDERBUFFER, m_depthBuffer);
+					glTexImage2D(GL_TEXTURE_2D, 0, GL_STENCIL_INDEX, 800, 600, 0, GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, NULL);
+					break;
+				case BufferType::Depth :
+					glGenTextures(1, &m_depthBuffer);
+					glBindTexture(GL_TEXTURE_2D, m_depthBuffer);
 
-				glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 800, 600);
-				break;
-			case BufferType::DepthStencil :
-				m_combinedBuffers = true;
+					glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 800, 600, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
+					break;
+				case BufferType::DepthStencil :
+					m_combinedBuffers = true;
 
-				glGenRenderbuffers(1, &m_depthBuffer);
-				glBindRenderbuffer(GL_RENDERBUFFER, m_depthBuffer);
+					glGenTextures(1, &m_depthBuffer);
+					glBindTexture(GL_TEXTURE_2D, m_depthBuffer);
 
-				glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 800, 600);
-				break;
-			default:
-				std::cout << "ERROR::FRAMEBUFFER::INVALID_BUFFERTYPE\n";
+					glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, 800, 600, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
+					break;
+				default:
+					std::cout << "ERROR::FRAMEBUFFER::INVALID_BUFFERTYPE\n";
+			}
+		}
+		else if (AttachmentType == Framebuffer::AttachTyp::RenderBuffer) {
+			switch (type) {
+				case BufferType::Color :
+					glGenTextures(1, &m_colorBuffer);
+					glBindTexture(GL_TEXTURE_2D, m_colorBuffer);
+
+					glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+					break;
+				case BufferType::Stencil :
+					glGenRenderbuffers(1, &m_stencilBuffer);
+					glBindRenderbuffer(GL_RENDERBUFFER, m_stencilBuffer);
+
+					glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX, 800, 600);
+					break;
+				case BufferType::Depth :
+					glGenRenderbuffers(1, &m_depthBuffer);
+					glBindRenderbuffer(GL_RENDERBUFFER, m_depthBuffer);
+
+					glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 800, 600);
+					break;
+				case BufferType::DepthStencil :
+					m_combinedBuffers = true;
+
+					glGenRenderbuffers(1, &m_depthBuffer);
+					glBindRenderbuffer(GL_RENDERBUFFER, m_depthBuffer);
+
+					glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 800, 600);
+					break;
+				default:
+					std::cout << "ERROR::FRAMEBUFFER::INVALID_BUFFERTYPE\n";
+			}
 		}
 	}
 }
