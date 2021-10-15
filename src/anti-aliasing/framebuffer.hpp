@@ -31,20 +31,18 @@ private:
 	bool m_combinedBuffers{ false };
 
 private:
-	void CreateBuffer(BufferType type, std::uint32_t nmrSamples = 1);
-	void AttachBuffer(BufferType type, std::uint32_t nmrSamples = 1);
+	void CreateBuffer(BufferType type);
+	void AttachBuffer(BufferType type);
 
 public:
 	std::uint32_t Id{};
 	AttachTyp AttachmentType{};
-	bool IsMultisample{ false };
-	std::uint32_t NmrSamples{};
 
 public:
-	Framebuffer(bool createDepthBuffer = false, bool createStencilBuffer = false, AttachTyp attachmentType = AttachTyp::Texture,
-			std::uint32_t nmrSamples = 1);
+	Framebuffer(bool createDepthBuffer = false, bool createStencilBuffer = false, AttachTyp attachmentType = AttachTyp::Texture);
 	
 	void Bind(GLenum target = GL_FRAMEBUFFER) const;
+
 	const std::uint32_t GetColorBuffer() const;
 };
 

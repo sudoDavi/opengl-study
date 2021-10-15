@@ -3,6 +3,7 @@
 #include "flycam.hpp"
 #include "texture.hpp"
 #include "framebuffer.hpp"
+#include "ms-framebuffer.hpp"
 #include "model.hpp"
 
 #include <stb_image.h>
@@ -211,22 +212,45 @@ int main() {
 
 		glBindVertexArray(0);
 	}
-		
+
+	float quadVertices[] = {   // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+		// positions   // texCoords
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		-1.0f, -1.0f,  0.0f, 0.0f,
+		 1.0f, -1.0f,  1.0f, 0.0f,
+
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		 1.0f, -1.0f,  1.0f, 0.0f,
+		 1.0f,  1.0f,  1.0f, 1.0f
+	};
+	std::uint32_t quadVAO, quadVBO;
+	glGenVertexArrays(1, &quadVAO);
+	glGenBuffers(1, &quadVBO);
+	glBindVertexArray(quadVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
 	// Shaders
 	Shader shader{ "shaders/basic-shader.vert", "shaders/basic-shader.frag" };
 	Shader instancingShader{ "shaders/instancing-shader.vert", "shaders/basic-shader.frag" };
+	Shader screenShader{ "shaders/screen-shader.vert", "shaders/screen-shader.frag" };
 
 	// Multisample framebuffer
-	Framebuffer multisampleFB{ true, true, Framebuffer::AttachTyp::RenderBuffer, 4 };
+	MSFramebuffer multisampleFB{ 4 };
+	// Intermidiate framebuffer
+	Framebuffer intermediateFB{ true, true };
 
 	// Depth testing
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 
 	// Blending
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glEnable(GL_BLEND);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// MSAA
 	glEnable(GL_MULTISAMPLE);
@@ -245,6 +269,10 @@ int main() {
 
 		movement(window, deltaTime, camera);
 		mouseDirection(window, camera);
+
+		// Clear screen buffer
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Create matrices
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom()), 800.0f / 600.0f, 0.1f, 100.0f);
@@ -284,9 +312,24 @@ int main() {
 				);	
 		}
 
+
+		// After rendering on the MSFB we now blit it to a non-MS FrameBuffer and then use the colorBuffer of that FB to draw the scene
 		multisampleFB.Bind(GL_READ_FRAMEBUFFER);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		intermediateFB.Bind(GL_DRAW_FRAMEBUFFER);
 		glBlitFramebuffer(0, 0, 800, 600, 0, 0, 800, 600, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+		// Now render the scene on the quad
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glDisable(GL_DEPTH_TEST);
+
+		screenShader.use();
+		glBindVertexArray(quadVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, intermediateFB.GetColorBuffer());
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
