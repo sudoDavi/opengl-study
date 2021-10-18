@@ -1,6 +1,5 @@
 #include "constants.hpp"
 #include "shader.hpp"
-#define STB_IMAGE_IMPLEMENTATION
 #include "texture.hpp"
 #include "flycam.hpp"
 
@@ -9,6 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <stb_image.h>
 
 #include <iostream>
 #include <cstdlib>
@@ -25,9 +25,19 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow *window) {
+void processInput(GLFWwindow *window, bool &lightingModel) {
+	static bool BKeyPressed{ false };
+
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, true);	
+		glfwSetWindowShouldClose(window, true);
+
+	// If the B key is pressed, toggle the lighting model flag
+	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS && !BKeyPressed) {
+		lightingModel = !lightingModel;
+		BKeyPressed = true;
+	}
+	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_RELEASE)
+		BKeyPressed = false;
 }
 
 float getVisibility(GLFWwindow *window) {
@@ -251,23 +261,16 @@ int main() {
 
 	// Directional Light
 	lightingShader.setVec3f("directionalLight.direction", lightDirection);
-	lightingShader.setVec3f("directionalLight.ambient", lightColor * 0.0f);
-	lightingShader.setVec3f("directionalLight.diffuse", lightColor * 0.05f);
-	lightingShader.setVec3f("directionalLight.specular", lightColor * 0.2f);
+	lightingShader.setVec3f("directionalLight.ambient", lightColor * 0.05f);
+	lightingShader.setVec3f("directionalLight.diffuse", lightColor * 0.4f);
+	lightingShader.setVec3f("directionalLight.specular", lightColor * 0.5f);
 
 	// Point Lights
-	glm::vec3 pointLightColors[]{
-		glm::vec3(0.1f),
-		glm::vec3(0.1f),
-		glm::vec3(0.1f),
-		glm::vec3(0.3f, 0.2f, 1.0f)
-	};
-
 	for (auto index{0}; index < 4; ++index) {
 		lightingShader.setVec3f("pointLights[" + std::to_string(index) + "].position", pointLightPositions[index]);
-		lightingShader.setVec3f("pointLights[" + std::to_string(index) + "].ambient", pointLightColors[index] * 0.1f);
-		lightingShader.setVec3f("pointLights[" + std::to_string(index) + "].diffuse", pointLightColors[index]);
-		lightingShader.setVec3f("pointLights[" + std::to_string(index) + "].specular", pointLightColors[index]);
+		lightingShader.setVec3f("pointLights[" + std::to_string(index) + "].ambient", lightColor * 0.05f);
+		lightingShader.setVec3f("pointLights[" + std::to_string(index) + "].diffuse", lightColor * 0.8f);
+		lightingShader.setVec3f("pointLights[" + std::to_string(index) + "].specular", lightColor);
 		lightingShader.setVec1f("pointLights[" + std::to_string(index) + "].constantAtt", 1.0f);
 		lightingShader.setVec1f("pointLights[" + std::to_string(index) + "].linearAtt", 0.09f);
 		lightingShader.setVec1f("pointLights[" + std::to_string(index) + "].quadraticAtt", 0.032f);
@@ -306,14 +309,16 @@ int main() {
 
 	bool hidePointLight{ false };
 
+	bool blinnPhong{ false };
+
 	// Main Rendering loop
 	while (!glfwWindowShouldClose(window)) {
 		float currentFrame{ glfwGetTime() };
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		// Input handling
-		processInput(window);
+		// Input handling - Changes the Blinn-Phong/Phong flag according to the key B state
+		processInput(window, blinnPhong);
 
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
 		{
@@ -338,7 +343,7 @@ int main() {
 		projection = glm::perspective(glm::radians(camera.Zoom()), 800.0f / 600.0f, 0.1f, 100.0f);
 
 		// CLEARS THE SCREEN
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Draw a set of Cubes (Containers)
@@ -349,8 +354,11 @@ int main() {
 		lightingShader.setMatrix4f("projection", projection);
 		lightingShader.setMatrix4f("model", model);
 		lightingShader.setVec3f("viewPos", camera.GetPosition());
-		lightingShader.setVec3f("spotLight.position", camera.GetPosition());
-		lightingShader.setVec3f("spotLight.direction", camera.GetTarget());
+		// True = Blinn-Phong | False = Phong
+		lightingShader.setVec1b("blinn", blinnPhong);
+		// Disabled the spotlight since I want to the the effect from different angles
+		//lightingShader.setVec3f("spotLight.position", camera.GetPosition());
+		//lightingShader.setVec3f("spotLight.direction", camera.GetTarget());
 		
 		container.bind(GL_TEXTURE0);
 		containerSpecular.bind(GL_TEXTURE1);
