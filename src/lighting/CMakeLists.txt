@@ -9,6 +9,7 @@ set(
 	"light-maps"
 	"light-casters"
 	"multiple-lights"
+	"gamma-correction"
 )
 
 foreach(TUTORIAL ${TUTORIALS})
