@@ -189,24 +189,19 @@ int main() {
         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
 	};
 
-	glm::vec3 cubePositions[]{
-		glm::vec3( 0.0f,  0.0f,  0.0f),
-		glm::vec3( 2.0f,  5.0f, -15.0f), 
-		glm::vec3(-1.5f, -2.2f, -2.5f),
-		glm::vec3(-3.8f, -2.0f, -12.3f),
-		glm::vec3( 2.4f, -0.4f, -3.5f),
-		glm::vec3(-1.7f,  3.0f, -7.5f),
-		glm::vec3( 1.3f, -2.0f, -2.5f),
-		glm::vec3( 1.5f,  2.0f, -2.5f),
-		glm::vec3( 1.5f,  0.2f, -1.5f),
-		glm::vec3(-1.3f,  1.0f, -1.5f) 
+	float planeVertices[] = {
+		// positions            // normals         // texcoords
+	 	10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f,  10.0f,  0.0f,
+		-10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
+		-10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,   0.0f, 10.0f,
+
+		10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f,  10.0f,  0.0f,
+		-10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,   0.0f, 10.0f,
+		10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,  10.0f, 10.0f
 	};
 
 	glm::vec3 pointLightPositions[]{
-		glm::vec3( 0.7f, 0.2f, 2.0f),
-		glm::vec3( 2.3f, -3.3f, -4.0f),
-		glm::vec3( -4.0f, 2.0f, -12.0f),
-		glm::vec3( 0.0f, 0.0f, -3.0f)
+		glm::vec3( 0.0f, 1.5f, 0.0f),
 	};
 
 
@@ -244,9 +239,26 @@ int main() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
+	// Plane VAO,VBO
+	std::uint32_t planeVAO, planeVBO;
+	glGenVertexArrays(1, &planeVAO);
+	glBindVertexArray(planeVAO);
+	glGenBuffers(1, &planeVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
+
+	// Vertex position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	// Normal Vector attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+	// UV Map attribute
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+
 	// Load Textures
-	Texture container{ "assets/container2.png", false, GL_CLAMP_TO_EDGE };
-	Texture containerSpecular{ "assets/container2_specular.png", false, GL_CLAMP_TO_EDGE };
+	Texture wood{ "assets/wood.jpg", false, GL_CLAMP_TO_EDGE };
 
 	// Position of the DIRECTIONAL light source in the world
 	glm::vec3 lightPos(0.2f, 1.0f, 0.3f);
@@ -304,6 +316,8 @@ int main() {
 
 	glEnable(GL_DEPTH_TEST);
 
+	glEnable(GL_FRAMEBUFFER_SRGB);
+
 	float deltaTime{};
 	float lastFrame{ glfwGetTime() };
 
@@ -359,36 +373,23 @@ int main() {
 		// Disabled the spotlight since I want to the the effect from different angles
 		//lightingShader.setVec3f("spotLight.position", camera.GetPosition());
 		//lightingShader.setVec3f("spotLight.direction", camera.GetTarget());
+		// Draw Floor
+		wood.bind(GL_TEXTURE0);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 		
-		container.bind(GL_TEXTURE0);
-		containerSpecular.bind(GL_TEXTURE1);
-
-
-		for (auto index{0}; index < 10; ++index) {
-			model = glm::mat4(1.0f);
-			model = glm::translate(model, cubePositions[index]);
-			float angle = 20.0f * index;
-			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-			lightingShader.setMatrix4f("model", model);
-
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
+		
 
 		// Draw the light object
-		if (!hidePointLight) {
-			glBindVertexArray(lightVAO);
-			for (auto index{0}; index < 4; ++index) {
-				model = glm::mat4(1.0f);
-				model = glm::translate(model, pointLightPositions[index]);
-				model = glm::scale(model, glm::vec3(0.2f));
-				lightObjectShader.use();
-				lightObjectShader.setMatrix4f("view", view);
-				lightObjectShader.setMatrix4f("projection", projection);
-				lightObjectShader.setMatrix4f("model", model);
-				glDrawArrays(GL_TRIANGLES, 0, 36);
-			}	
-		}
-		
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, pointLightPositions[0]);
+		model = glm::scale(model, glm::vec3(0.2f));
+		lightObjectShader.use();
+		lightObjectShader.setMatrix4f("view", view);
+		lightObjectShader.setMatrix4f("projection", projection);
+		lightObjectShader.setMatrix4f("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+			
+				
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
