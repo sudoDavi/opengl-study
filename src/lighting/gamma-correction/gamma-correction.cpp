@@ -35,7 +35,9 @@ void processInput(GLFWwindow *window, bool &lightingModel) {
 	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS && !BKeyPressed) {
 		lightingModel = !lightingModel;
 		BKeyPressed = true;
+		std::cout << "Blinn-Phong: " << lightingModel << std::endl;
 	}
+
 	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_RELEASE)
 		BKeyPressed = false;
 }
@@ -144,7 +146,7 @@ int main() {
 	// Assign a callback function for when the screen is resized
 	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
-	// CUBE vertices for the vertex shader
+	// CUBE vertices for the light object
 	float cubeVertices[] = {
 	    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
          0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
@@ -200,18 +202,10 @@ int main() {
 		10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,  10.0f, 10.0f
 	};
 
-	glm::vec3 pointLightPositions[]{
-		glm::vec3( 0.0f, 1.5f, 0.0f),
-	};
+	glm::vec3 pointLightPosition{ glm::vec3( 0.0f, 1.5f, 0.0f) };
 
 
-	// Creating a Vertex Array Object
-	unsigned int VAO{};
-	glGenVertexArrays(1, &VAO);
-	// Bind the VAO
-	glBindVertexArray(VAO);
-
-	// Create a Vertex Buffer Object
+	// Create a Vertex Buffer Object for the light object
 	unsigned int VBO;
 	glGenBuffers(1, &VBO);
 	// Bind the VBO to the array buffer
@@ -229,7 +223,7 @@ int main() {
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
-	// Create a new VAO for the light object
+	// Create a VAO for the light object
 	unsigned int lightVAO{};
 	glGenVertexArrays(1, &lightVAO);
 	glBindVertexArray(lightVAO);
@@ -258,11 +252,7 @@ int main() {
 	glEnableVertexAttribArray(2);
 
 	// Load Textures
-	Texture wood{ "assets/wood.jpg", false, GL_CLAMP_TO_EDGE };
-
-	// Position of the DIRECTIONAL light source in the world
-	glm::vec3 lightPos(0.2f, 1.0f, 0.3f);
-	glm::vec3 lightDirection(glm::vec3(0.0f) - lightPos);
+	Texture wood{ "assets/wood.jpg", false, GL_REPEAT, false };
 
 	// Color of the light in the scene
 	glm::vec3 lightColor(1.0f);
@@ -270,36 +260,9 @@ int main() {
 	// Create the shader that's used to light up the Cube
 	Shader lightingShader{ "shaders/lighting.vert", "shaders/lighting.frag" };
 	lightingShader.use();
+	// Texture Unit
+	lightingShader.setVec1i("floorTexture", 0);
 
-	// Directional Light
-	lightingShader.setVec3f("directionalLight.direction", lightDirection);
-	lightingShader.setVec3f("directionalLight.ambient", lightColor * 0.05f);
-	lightingShader.setVec3f("directionalLight.diffuse", lightColor * 0.4f);
-	lightingShader.setVec3f("directionalLight.specular", lightColor * 0.5f);
-
-	// Point Lights
-	for (auto index{0}; index < 4; ++index) {
-		lightingShader.setVec3f("pointLights[" + std::to_string(index) + "].position", pointLightPositions[index]);
-		lightingShader.setVec3f("pointLights[" + std::to_string(index) + "].ambient", lightColor * 0.05f);
-		lightingShader.setVec3f("pointLights[" + std::to_string(index) + "].diffuse", lightColor * 0.8f);
-		lightingShader.setVec3f("pointLights[" + std::to_string(index) + "].specular", lightColor);
-		lightingShader.setVec1f("pointLights[" + std::to_string(index) + "].constantAtt", 1.0f);
-		lightingShader.setVec1f("pointLights[" + std::to_string(index) + "].linearAtt", 0.09f);
-		lightingShader.setVec1f("pointLights[" + std::to_string(index) + "].quadraticAtt", 0.032f);
-	}
-
-	// SpotLight
-	lightingShader.setVec1f("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-	lightingShader.setVec1f("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
-	lightingShader.setVec3f("spotLight.ambient", lightColor * 0.1f);
-	lightingShader.setVec3f("spotLight.diffuse", lightColor * 0.8f);
-	lightingShader.setVec3f("spotLight.specular", lightColor);
-	lightingShader.setVec1f("spotLight.constantAtt", 1.0f);
-	lightingShader.setVec1f("spotLight.linearAtt", 0.09f);
-	lightingShader.setVec1f("spotLight.quadraticAtt", 0.032f);
-	lightingShader.setVec1f("material.shininess", 0.5f * 64);
-	lightingShader.setVec1i("material.specular", 1);
-	lightingShader.setVec1i("material.diffuse", 0);
 
 	// Shader for the light source cube object i.e Lamp
 	Shader lightObjectShader{ "shaders/light.vert", "shaders/light.frag" };
@@ -361,13 +324,12 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Draw a set of Cubes (Containers)
-		glBindVertexArray(VAO);
-		glm::mat4 model{ glm::mat4(1.0f) };
+		glBindVertexArray(planeVAO);
 		lightingShader.use();
 		lightingShader.setMatrix4f("view", view);
 		lightingShader.setMatrix4f("projection", projection);
-		lightingShader.setMatrix4f("model", model);
 		lightingShader.setVec3f("viewPos", camera.GetPosition());
+		lightingShader.setVec3f("lightPos", pointLightPosition);
 		// True = Blinn-Phong | False = Phong
 		lightingShader.setVec1b("blinn", blinnPhong);
 		// Disabled the spotlight since I want to the the effect from different angles
@@ -380,8 +342,10 @@ int main() {
 		
 
 		// Draw the light object
+		glBindVertexArray(lightVAO);
+		glm::mat4 model{ glm::mat4(1.0f) };
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, pointLightPositions[0]);
+		model = glm::translate(model, pointLightPosition);
 		model = glm::scale(model, glm::vec3(0.2f));
 		lightObjectShader.use();
 		lightObjectShader.setMatrix4f("view", view);

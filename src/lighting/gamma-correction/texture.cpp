@@ -1,6 +1,6 @@
 #include "texture.hpp"
 
-Texture::Texture(const std::string& path, bool flipY, GLenum wrap, int desiredChannels)
+Texture::Texture(const std::string& path, bool flipY, GLenum wrap, int desiredChannels, bool gammaCorrection)
 	{
 	// Configure Load options
 	stbi_set_flip_vertically_on_load(flipY);
@@ -14,19 +14,19 @@ Texture::Texture(const std::string& path, bool flipY, GLenum wrap, int desiredCh
 	height = _height;
 	numberOfChannels = _numberChannels;
 
-	GLenum format;
-    if (_numberChannels == 1) {
-
-      format = GL_RED;
-    }
-    else if (_numberChannels == 3) {
-
-      format = GL_RGB;
-    }
-    else if (_numberChannels == 4) {
-
-      format = GL_RGBA;
-    }
+	GLenum format, internalFormat;
+	if (_numberChannels == 1) {
+		internalFormat = GL_RED;
+		format = GL_RED;
+	}
+	else if (_numberChannels == 3) {
+		internalFormat = gammaCorrection ? GL_SRGB : GL_RGB;
+		format = GL_RGB;
+	}
+	else if (_numberChannels == 4) {
+		internalFormat = gammaCorrection ? GL_SRGB_ALPHA : GL_RGBA;
+		format = GL_RGBA;
+	}
 	// Generate the OpenGL texture ID
 	glGenTextures(1, &m_glTexture);
 	// Bind the generated ID to the currently used OpenGL Texture
@@ -45,7 +45,7 @@ Texture::Texture(const std::string& path, bool flipY, GLenum wrap, int desiredCh
 	// Check if loading was successful
 	if (dataPtr) {
 		// Load data and generate mipmaps
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, format, GL_UNSIGNED_BYTE, dataPtr);
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, dataPtr);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	} else {
 		std::cerr << "ERROR::TEXTURE::FAILURE_TO_LOAD\n";
