@@ -252,7 +252,7 @@ int main() {
 	glEnableVertexAttribArray(2);
 
 	// Load Textures
-	Texture wood{ "assets/wood.jpg", false, GL_REPEAT, false };
+	Texture wood{ "assets/wood.jpg", false, GL_REPEAT, 0, true };
 
 	// Color of the light in the scene
 	glm::vec3 lightColor(1.0f);
