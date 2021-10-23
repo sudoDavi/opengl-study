@@ -12,7 +12,10 @@ uniform vec3 viewPos;
 uniform vec3 lightPos;
 uniform sampler2D floorTexture;
 
+const float gamma = 2.2;
+
 void main() {
+	vec4 fragColor; // Linear space frag color
 	vec3 color = texture(floorTexture, TexCoords).rgb;
 	// ambient
 	vec3 ambient = 0.05 * color;
@@ -36,5 +39,8 @@ void main() {
 		spec = pow(max(dot(viewDir, reflectDir), 0.0), 8.0);
 	}
 	vec3 specular = vec3(0.3) * spec; // assuming bright white light color
-	FragColor = vec4(ambient + diffuse + specular, 1.0);
+	fragColor = vec4(ambient + diffuse + specular, 1.0);
+
+	FragColor.rgb = pow(fragColor.rgb, vec3(1.0/gamma));
+	
 }

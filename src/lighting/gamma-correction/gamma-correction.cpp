@@ -252,7 +252,7 @@ int main() {
 	glEnableVertexAttribArray(2);
 
 	// Load Textures
-	Texture wood{ "assets/wood.jpg", false, GL_REPEAT, 0, true };
+	Texture wood{ "assets/wood.jpg", false, GL_REPEAT, 3, true };
 
 	// Color of the light in the scene
 	glm::vec3 lightColor(1.0f);
@@ -279,7 +279,6 @@ int main() {
 
 	glEnable(GL_DEPTH_TEST);
 
-	glEnable(GL_FRAMEBUFFER_SRGB);
 
 	float deltaTime{};
 	float lastFrame{ glfwGetTime() };
