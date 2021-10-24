@@ -10,6 +10,7 @@ set(
 	"light-casters"
 	"multiple-lights"
 	"gamma-correction"
+	"shadows"
 )
 
 foreach(TUTORIAL ${TUTORIALS})
