@@ -2,6 +2,7 @@
 #include "shader.hpp"
 #include "texture.hpp"
 #include "flycam.hpp"
+#include "depth-fb.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -202,7 +203,7 @@ int main() {
 		10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,  10.0f, 10.0f
 	};
 
-	glm::vec3 pointLightPosition{ glm::vec3( 0.0f, 1.5f, 0.0f) };
+	glm::vec3 cubePositions[]{ glm::vec3( 0.0f, 1.5f, 0.0f), glm::vec3(2.5f, 0.5f, 1.0f), glm::vec3(1.0f, 2.0f, 1.0f) };
 
 
 	// Create a Vertex Buffer Object for the light object
@@ -224,9 +225,9 @@ int main() {
 	glEnableVertexAttribArray(2);
 
 	// Create a VAO for the light object
-	unsigned int lightVAO{};
-	glGenVertexArrays(1, &lightVAO);
-	glBindVertexArray(lightVAO);
+	unsigned int cubeVAO{};
+	glGenVertexArrays(1, &cubeVAO);
+	glBindVertexArray(cubeVAO);
 	// We can re-use the same VBO, since we're doing a cube light object
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	// Re-configure the VertexAttributes
@@ -252,7 +253,7 @@ int main() {
 	glEnableVertexAttribArray(2);
 
 	// Load Textures
-	Texture wood{ "assets/wood.jpg", false, GL_REPEAT, 3, true };
+	Texture wood{ "assets/wood.jpg", false, GL_REPEAT };
 
 	// Color of the light in the scene
 	glm::vec3 lightColor(1.0f);
@@ -263,9 +264,10 @@ int main() {
 	// Texture Unit
 	lightingShader.setVec1i("floorTexture", 0);
 
-
-	// Shader for the light source cube object i.e Lamp
-	Shader lightObjectShader{ "shaders/light.vert", "shaders/light.frag" };
+	// Shadow map shader
+	Shader shadowShader{ "shaders/shadow.vert", "shaders/shadow.frag" };
+	// Shadow map depth buffer
+	DepthFB depthFB{ 1024, 1024 };
 	
 	// Bind a GLFW callback to change the drawing mode
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
@@ -286,6 +288,14 @@ int main() {
 	bool hidePointLight{ false };
 
 	bool blinnPhong{ false };
+	
+	// Shadow map orthogonal projection near and far planes
+	float near_plane{ 1.0f }, far_plane{ 7.5f };
+	// Shadow map transform matrices
+	glm::mat4 lightProjection{ glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane) };
+	glm::mat4 lightView{ glm::lookAt(glm::vec3(-2.0f, 4.0f, -1.0f), glm::vec3(0.0f, 0.0f, 0.0f),
+			glm::vec3(0.0f, 1.0f, 0.0f)) };
+	glm::mat4 lightSpaceMatrix{ lightProjection * lightView };
 
 	// Main Rendering loop
 	while (!glfwWindowShouldClose(window)) {
@@ -306,6 +316,11 @@ int main() {
 		//Modify the color of the light
 		lightColor = glm::vec3(1.0f);
 
+		// Render the Shadow map
+		depthFB.Bind();
+		glClear(GL_DEPTH_BUFFER_BIT);
+
+
 		// Update Transforms
 
 		glm::mat4 view{ glm::mat4(1.0f) };
@@ -317,42 +332,35 @@ int main() {
 		glm::mat4 projection{ glm::mat4(1.0f) };
 		
 		projection = glm::perspective(glm::radians(camera.Zoom()), 800.0f / 600.0f, 0.1f, 100.0f);
+		
+		// Configure the shader
+		shadowShader.use();
+		shadowShader.setMatrix4f("lightingSpaceMatrix", lightSpaceMatrix);
+		// Draw the plane
+		glBindVertexArray(planeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 
+		// Draw the cubes
+		glm::mat4 model{};
+		glBindVertexArray(cubeVAO);
+		for(auto i{0}; i < 3; ++i) {
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, cubePositions[i]);
+			model = glm::scale(model, glm::vec3(0.5f));
+			shadowShader.setMatrix4f("model", model);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+		
+		
+		// Bind the normal Framebuffer
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		// Turn the viewport back to normal
+		glViewport(0, 0, 800, 600);
 		// CLEARS THE SCREEN
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// Draw a set of Cubes (Containers)
-		glBindVertexArray(planeVAO);
-		lightingShader.use();
-		lightingShader.setMatrix4f("view", view);
-		lightingShader.setMatrix4f("projection", projection);
-		lightingShader.setVec3f("viewPos", camera.GetPosition());
-		lightingShader.setVec3f("lightPos", pointLightPosition);
-		// True = Blinn-Phong | False = Phong
-		lightingShader.setVec1b("blinn", blinnPhong);
-		// Disabled the spotlight since I want to the the effect from different angles
-		//lightingShader.setVec3f("spotLight.position", camera.GetPosition());
-		//lightingShader.setVec3f("spotLight.direction", camera.GetTarget());
-		// Draw Floor
-		wood.bind(GL_TEXTURE0);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		
-		
-
-		// Draw the light object
-		glBindVertexArray(lightVAO);
-		glm::mat4 model{ glm::mat4(1.0f) };
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, pointLightPosition);
-		model = glm::scale(model, glm::vec3(0.2f));
-		lightObjectShader.use();
-		lightObjectShader.setMatrix4f("view", view);
-		lightObjectShader.setMatrix4f("projection", projection);
-		lightObjectShader.setMatrix4f("model", model);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-			
-				
+		// TODO: ADD SHADOW RENDERING
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

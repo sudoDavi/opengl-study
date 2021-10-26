@@ -12,6 +12,6 @@ public:
 	std::uint32_t Height, Width;
 public:
 	DepthFB(std::uint32_t width, std::uint32_t height);
-	Bind();
+	void Bind();
 };
 #endif
