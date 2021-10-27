@@ -26,21 +26,12 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow *window, bool &lightingModel) {
+void processInput(GLFWwindow *window) {
 	static bool BKeyPressed{ false };
 
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
-	// If the B key is pressed, toggle the lighting model flag
-	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS && !BKeyPressed) {
-		lightingModel = !lightingModel;
-		BKeyPressed = true;
-		std::cout << "Blinn-Phong: " << lightingModel << std::endl;
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_RELEASE)
-		BKeyPressed = false;
 }
 
 float getVisibility(GLFWwindow *window) {
@@ -149,64 +140,69 @@ int main() {
 
 	// CUBE vertices for the light object
 	float cubeVertices[] = {
-	    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-    
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
-    
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-    
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-    
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-    
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
+	     // back face
+            -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+             1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+             1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
+             1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+            -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+            -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
+            // front face
+            -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+             1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
+             1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+             1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+            -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
+            -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+            // left face
+            -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+            -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
+            -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+            -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+            -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+            -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+            // right face
+             1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+             1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+             1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right         
+             1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+             1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+             1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
+            // bottom face
+            -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+             1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
+             1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+             1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+            -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+            -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+            // top face
+            -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+             1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+             1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
+             1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+            -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+            -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f
 	};
 
 	float planeVertices[] = {
-		// positions            // normals         // texcoords
-	 	10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f,  10.0f,  0.0f,
-		-10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
-		-10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,   0.0f, 10.0f,
+        // positions            // normals         // texcoords
+         25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
+        -25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
+        -25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
 
-		10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f,  10.0f,  0.0f,
-		-10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,   0.0f, 10.0f,
-		10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,  10.0f, 10.0f
+         25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
+        -25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
+         25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 25.0f
 	};
 
-	glm::vec3 cubePositions[]{ glm::vec3( 0.0f, 1.5f, 0.0f), glm::vec3(2.5f, 0.5f, 1.0f), glm::vec3(1.0f, 2.0f, 1.0f) };
+	glm::vec3 cubePositions[]{ glm::vec3( 0.0f, 1.5f, 0.0f), glm::vec3(2.0f, 0.0f, 1.0f), glm::vec3(-1.0f, 0.0f, 2.0f) };
+	glm::vec3 lightPos{ glm::vec3(-2.0f, 4.0f, -1.5f) };
 
-
-	// Create a Vertex Buffer Object for the light object
+	// Create a VAO for the cubes
+	unsigned int cubeVAO{};
+	glGenVertexArrays(1, &cubeVAO);
+	glBindVertexArray(cubeVAO);
+	// Create a Vertex Buffer Object for the cubes
 	unsigned int VBO;
 	glGenBuffers(1, &VBO);
 	// Bind the VBO to the array buffer
@@ -224,15 +220,6 @@ int main() {
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
-	// Create a VAO for the light object
-	unsigned int cubeVAO{};
-	glGenVertexArrays(1, &cubeVAO);
-	glBindVertexArray(cubeVAO);
-	// We can re-use the same VBO, since we're doing a cube light object
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	// Re-configure the VertexAttributes
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
 
 	// Plane VAO,VBO
 	std::uint32_t planeVAO, planeVBO;
@@ -258,14 +245,15 @@ int main() {
 	// Color of the light in the scene
 	glm::vec3 lightColor(1.0f);
 
-	// Create the shader that's used to light up the Cube
-	Shader lightingShader{ "shaders/lighting.vert", "shaders/lighting.frag" };
-	lightingShader.use();
+	// Create the shadow and light shader
+	Shader shadowShader{ "shaders/shadow.vert", "shaders/shadow.frag" };
+	shadowShader.use();
 	// Texture Unit
-	lightingShader.setVec1i("floorTexture", 0);
+	shadowShader.setVec1i("diffuseTexture", 0);
+	shadowShader.setVec1i("shadowMap", 1);
 
 	// Shadow map shader
-	Shader shadowShader{ "shaders/shadow.vert", "shaders/shadow.frag" };
+	Shader shadowMapShader{ "shaders/shadow-map.vert", "shaders/shadow-map.frag" };
 	// Shadow map depth buffer
 	DepthFB depthFB{ 1024, 1024 };
 	
@@ -287,14 +275,12 @@ int main() {
 
 	bool hidePointLight{ false };
 
-	bool blinnPhong{ false };
 	
 	// Shadow map orthogonal projection near and far planes
 	float near_plane{ 1.0f }, far_plane{ 7.5f };
 	// Shadow map transform matrices
 	glm::mat4 lightProjection{ glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane) };
-	glm::mat4 lightView{ glm::lookAt(glm::vec3(-2.0f, 4.0f, -1.0f), glm::vec3(0.0f, 0.0f, 0.0f),
-			glm::vec3(0.0f, 1.0f, 0.0f)) };
+	glm::mat4 lightView{ glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f)) };
 	glm::mat4 lightSpaceMatrix{ lightProjection * lightView };
 
 	// Main Rendering loop
@@ -303,8 +289,8 @@ int main() {
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		// Input handling - Changes the Blinn-Phong/Phong flag according to the key B state
-		processInput(window, blinnPhong);
+		// Input handling
+		processInput(window);
 
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
 		{
@@ -332,16 +318,57 @@ int main() {
 		glm::mat4 projection{ glm::mat4(1.0f) };
 		
 		projection = glm::perspective(glm::radians(camera.Zoom()), 800.0f / 600.0f, 0.1f, 100.0f);
+		glm::mat4 model{ glm::mat4(1.0f) };
+
 		
 		// Configure the shader
+		shadowMapShader.use();
+		shadowMapShader.setMatrix4f("lightingSpaceMatrix", lightSpaceMatrix);
+		shadowMapShader.setMatrix4f("model", model);
+		// Draw the plane
+		wood.bind(GL_TEXTURE0);
+		glBindVertexArray(planeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		// Draw the cubes
+		glBindVertexArray(cubeVAO);
+		for(auto i{0}; i < 3; ++i) {
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, cubePositions[i]);
+			model = glm::scale(model, glm::vec3(0.5f));
+			shadowMapShader.setMatrix4f("model", model);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+		
+		// Turn the viewport back to normal		
+		glViewport(0, 0, 800, 600);		
+		// Bind the normal Framebuffer
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		
+		// CLEARS THE SCREEN
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// Configure the Shadow and light shader
 		shadowShader.use();
-		shadowShader.setMatrix4f("lightingSpaceMatrix", lightSpaceMatrix);
+		shadowShader.setMatrix4f("projection", projection);
+		shadowShader.setMatrix4f("view", view);
+		shadowShader.setMatrix4f("lightSpaceMatrix", lightSpaceMatrix);
+		shadowShader.setVec3f("viewPos", camera.GetPosition());
+		shadowShader.setVec3f("lightPos", lightPos);
+		model = glm::mat4(1.0f);
+		shadowShader.setMatrix4f("model", model);
+
+		// Bind the textures
+		wood.bind(GL_TEXTURE0);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, depthFB.TexId);
+
 		// Draw the plane
 		glBindVertexArray(planeVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		// Draw the cubes
-		glm::mat4 model{};
 		glBindVertexArray(cubeVAO);
 		for(auto i{0}; i < 3; ++i) {
 			model = glm::mat4(1.0f);
@@ -350,17 +377,13 @@ int main() {
 			shadowShader.setMatrix4f("model", model);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
-		
-		
-		// Bind the normal Framebuffer
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		// Turn the viewport back to normal
-		glViewport(0, 0, 800, 600);
-		// CLEARS THE SCREEN
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// TODO: ADD SHADOW RENDERING
+		// Draw light object
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, lightPos);
+		model = glm::scale(model, glm::vec3(0.1f));
+		shadowShader.setMatrix4f("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
