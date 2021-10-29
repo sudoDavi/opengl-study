@@ -195,8 +195,16 @@ int main() {
          25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 25.0f
 	};
 
+        float quadVertices[] = {
+            // positions        // texture Coords
+            -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+             1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+             1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+        };
+
 	glm::vec3 cubePositions[]{ glm::vec3( 0.0f, 1.5f, 0.0f), glm::vec3(2.0f, 0.0f, 1.0f), glm::vec3(-1.0f, 0.0f, 2.0f) };
-	glm::vec3 lightPos{ glm::vec3(-2.0f, 4.0f, -1.5f) };
+	glm::vec3 lightPos{ glm::vec3(-2.0f, 4.0f, -1.0f) };
 
 	// Create a VAO for the cubes
 	unsigned int cubeVAO{};
@@ -239,8 +247,20 @@ int main() {
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
+	// setup plane VAO
+	std::uint32_t quadVAO, quadVBO;
+        glGenVertexArrays(1, &quadVAO);
+        glGenBuffers(1, &quadVBO);
+        glBindVertexArray(quadVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+
 	// Load Textures
-	Texture wood{ "assets/wood.jpg", false, GL_REPEAT };
+	Texture wood{ "assets/wood.jpg" };
 
 	// Color of the light in the scene
 	glm::vec3 lightColor(1.0f);
@@ -254,6 +274,12 @@ int main() {
 
 	// Shadow map shader
 	Shader shadowMapShader{ "shaders/shadow-map.vert", "shaders/shadow-map.frag" };
+
+	// Debug depth render shader
+	Shader debugRender{ "shaders/debug-depth-render.vert", "shaders/debug-depth-render.frag" };
+	debugRender.use();
+	debugRender.setVec1i("depthMap", 0);
+
 	// Shadow map depth buffer
 	DepthFB depthFB{ 1024, 1024 };
 	
@@ -279,9 +305,9 @@ int main() {
 	// Shadow map orthogonal projection near and far planes
 	float near_plane{ 1.0f }, far_plane{ 7.5f };
 	// Shadow map transform matrices
-	glm::mat4 lightProjection{ glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane) };
-	glm::mat4 lightView{ glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f)) };
-	glm::mat4 lightSpaceMatrix{ lightProjection * lightView };
+	glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+	glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 lightSpaceMatrix = lightProjection * lightView;
 
 	// Main Rendering loop
 	while (!glfwWindowShouldClose(window)) {
@@ -302,11 +328,6 @@ int main() {
 		//Modify the color of the light
 		lightColor = glm::vec3(1.0f);
 
-		// Render the Shadow map
-		depthFB.Bind();
-		glClear(GL_DEPTH_BUFFER_BIT);
-
-
 		// Update Transforms
 
 		glm::mat4 view{ glm::mat4(1.0f) };
@@ -323,8 +344,12 @@ int main() {
 		
 		// Configure the shader
 		shadowMapShader.use();
-		shadowMapShader.setMatrix4f("lightingSpaceMatrix", lightSpaceMatrix);
+		shadowMapShader.setMatrix4f("lightSpaceMatrix", lightSpaceMatrix);
 		shadowMapShader.setMatrix4f("model", model);
+
+		// Bind the depth buffer
+		depthFB.Bind();
+		glClear(GL_DEPTH_BUFFER_BIT);
 		// Draw the plane
 		wood.bind(GL_TEXTURE0);
 		glBindVertexArray(planeVAO);
@@ -340,11 +365,12 @@ int main() {
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 		
-		// Turn the viewport back to normal		
-		glViewport(0, 0, 800, 600);		
+
 		// Bind the normal Framebuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		
+		// Turn the viewport back to normal
+		glViewport(0, 0, 800, 600);
+
 		// CLEARS THE SCREEN
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -384,6 +410,18 @@ int main() {
 		model = glm::scale(model, glm::vec3(0.1f));
 		shadowShader.setMatrix4f("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Debug depth map rendering
+		/*
+		debugRender.use();
+		debugRender.setVec1f("near_plane", near_plane);
+		debugRender.setVec1f("far_plane", far_plane);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, depthFB.TexId);
+		glBindVertexArray(quadVAO);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		*/
+
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
