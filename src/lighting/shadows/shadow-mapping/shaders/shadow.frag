@@ -17,6 +17,7 @@ uniform sampler2D shadowMap;
 
 float ShadowCalculation(vec4 fragPosLightSpace)
 {
+	const float bias = 0.005;
 	// Perform pespective divide
 	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
 	// Transform projCoords to the depth map range
@@ -25,7 +26,7 @@ float ShadowCalculation(vec4 fragPosLightSpace)
 	float closestDepth = texture(shadowMap, projCoords.xy).r;
 
 	float currentDepth = projCoords.z;
-	float shadow = currentDepth > closestDepth ? 1.0 : 0.0;
+	float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
 
 	return shadow;
 }
