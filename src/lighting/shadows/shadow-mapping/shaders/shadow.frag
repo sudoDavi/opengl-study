@@ -15,9 +15,9 @@ uniform vec3 lightPos;
 uniform sampler2D diffuseTexture;
 uniform sampler2D shadowMap;
 
-float ShadowCalculation(vec4 fragPosLightSpace)
+float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
 {
-	const float bias = 0.005;
+	float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
 	// Perform pespective divide
 	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
 	// Transform projCoords to the depth map range
@@ -48,7 +48,7 @@ void main() {
 	spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
 	vec3 specular = spec * lightColor;    
 	// calculate shadow
-	float shadow = ShadowCalculation(fs_in.FragPosLightSpace);       
+	float shadow = ShadowCalculation(fs_in.FragPosLightSpace, normal, lightDir);       
 	vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;    
 
 	FragColor = vec4(lighting, 1.0);
