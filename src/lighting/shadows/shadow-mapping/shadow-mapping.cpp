@@ -293,7 +293,10 @@ int main() {
 	glfwSetScrollCallback(window, scrollHandle);
 
 
+	// Enabling Depth Testing
 	glEnable(GL_DEPTH_TEST);
+	// Enabling Culling
+	glEnable(GL_CULL_FACE);
 
 
 	float deltaTime{};
@@ -347,6 +350,9 @@ int main() {
 		shadowMapShader.setMatrix4f("lightSpaceMatrix", lightSpaceMatrix);
 		shadowMapShader.setMatrix4f("model", model);
 
+		// Culling front faces to fix Peter panning
+		glCullFace(GL_FRONT);
+
 		// Bind the depth buffer
 		depthFB.Bind();
 		glClear(GL_DEPTH_BUFFER_BIT);
@@ -370,6 +376,8 @@ int main() {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		// Turn the viewport back to normal
 		glViewport(0, 0, 800, 600);
+		// Restoring the face culling option
+		glCullFace(GL_BACK);
 
 		// CLEARS THE SCREEN
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -391,8 +399,12 @@ int main() {
 		glBindTexture(GL_TEXTURE_2D, depthFB.TexId);
 
 		// Draw the plane
+		// For drawing the floor we'll disable face culling
+		glDisable(GL_CULL_FACE);
 		glBindVertexArray(planeVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
+		// Re-enabling face culling for the cubes
+		glEnable(GL_CULL_FACE);
 
 		// Draw the cubes
 		glBindVertexArray(cubeVAO);
