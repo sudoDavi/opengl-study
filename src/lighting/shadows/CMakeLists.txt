@@ -4,7 +4,8 @@ project(OpenGLStudy-Lighting-Shadows)
 
 set(
 	TUTORIALS
-	"shadow-mapping"
+	"directional-shadows"
+	"point-shadows"
 )
 
 foreach(TUTORIAL ${TUTORIALS})
