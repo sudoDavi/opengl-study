@@ -16,6 +16,7 @@
 #include <cmath>
 #include <algorithm>
 #include <string>
+#include <vector>
 
 
 // I know it is a global variable, but I'm just using it because I haven't implemented a Game Object yet
@@ -203,7 +204,14 @@ int main() {
              1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
         };
 
-	glm::vec3 cubePositions[]{ glm::vec3( 0.0f, 1.5f, 0.0f), glm::vec3(2.0f, 0.0f, 1.0f), glm::vec3(-1.0f, 0.0f, 2.0f) };
+	glm::vec3 cubePositions[]{ 
+		glm::vec3( 0.0f, 1.5f, 0.0f),
+		glm::vec3(2.0f, 0.0f, 1.0f),
+		glm::vec3(-1.0f, 0.0f, 2.0f),
+		glm::vec3(-2.5f, 0.0f, -3.0f),
+		glm::vec3(-4.0f, 1.5f, -3.0f),
+		glm::vec3(3.0f, 0.0f, -2.0f)
+	};
 	glm::vec3 lightPos{ glm::vec3(-2.0f, 4.0f, -1.0f) };
 
 	// Create a VAO for the cubes
@@ -259,6 +267,41 @@ int main() {
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
+	// Depth cubemap
+	std::uint32_t depthCubemap;
+	glGenTextures(1, &depthCubemap);
+	const std::uint32_t SHADOW_W{ 1024 }, SHADOW_H{ 1024 };
+	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
+	for(auto i{0}; i < 6; ++i)
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, SHADOW_W, SHADOW_H, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	// Depth cubemap lightspace transforms
+	float aspect = (float)SHADOW_W/(float)SHADOW_H;
+	float near = 1.0f;
+	float far = 25.0f;
+	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, near, far);
+
+	std::vector<glm::mat4> shadowTransforms;
+	shadowTransforms.push_back(shadowProj * 
+		glm::lookAt(lightPos, lightPos + glm::vec3( 1.0, 0.0, 0.0), glm::vec3(0.0,-1.0, 0.0)));
+	shadowTransforms.push_back(shadowProj * 
+		glm::lookAt(lightPos, lightPos + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0,-1.0, 0.0)));
+	shadowTransforms.push_back(shadowProj * 
+		glm::lookAt(lightPos, lightPos + glm::vec3( 0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)));
+	shadowTransforms.push_back(shadowProj * 
+		glm::lookAt(lightPos, lightPos + glm::vec3( 0.0,-1.0, 0.0), glm::vec3(0.0, 0.0,-1.0)));
+	shadowTransforms.push_back(shadowProj * 
+		glm::lookAt(lightPos, lightPos + glm::vec3( 0.0, 0.0, 1.0), glm::vec3(0.0,-1.0, 0.0)));
+	shadowTransforms.push_back(shadowProj * 
+		glm::lookAt(lightPos, lightPos + glm::vec3( 0.0, 0.0,-1.0), glm::vec3(0.0,-1.0, 0.0)));
+
+
 	// Load Textures
 	Texture wood{ "assets/wood.jpg" };
 
@@ -266,22 +309,18 @@ int main() {
 	glm::vec3 lightColor(1.0f);
 
 	// Create the shadow and light shader
-	Shader shadowShader{ "shaders/shadow.vert", "shaders/shadow.frag" };
-	shadowShader.use();
+	//Shader shadowShader{ "shaders/shadow.vert", "shaders/shadow.frag" };
+	//shadowShader.use();
 	// Texture Unit
-	shadowShader.setVec1i("diffuseTexture", 0);
-	shadowShader.setVec1i("shadowMap", 1);
+	//shadowShader.setVec1i("diffuseTexture", 0);
+	//shadowShader.setVec1i("shadowMap", 1);
 
 	// Shadow map shader
-	Shader shadowMapShader{ "shaders/shadow-map.vert", "shaders/shadow-map.frag" };
-
-	// Debug depth render shader
-	Shader debugRender{ "shaders/debug-depth-render.vert", "shaders/debug-depth-render.frag" };
-	debugRender.use();
-	debugRender.setVec1i("depthMap", 0);
+	Shader shadowMapShader{ "shaders/shadow-depth.vert", "shaders/shadow-depth.geo", "shaders/shadow-depth.frag" };
 
 	// Shadow map depth buffer
-	DepthFB depthFB{ 1024, 1024 };
+	DepthFB depthFB{ 1024, 1024, false };
+	depthFB.Attach(depthCubemap);
 	
 	// Bind a GLFW callback to change the drawing mode
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
@@ -303,14 +342,6 @@ int main() {
 	float lastFrame{ glfwGetTime() };
 
 	bool hidePointLight{ false };
-
-	
-	// Shadow map orthogonal projection near and far planes
-	float near_plane{ 1.0f }, far_plane{ 7.5f };
-	// Shadow map transform matrices
-	glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-	glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 lightSpaceMatrix = lightProjection * lightView;
 
 	// Main Rendering loop
 	while (!glfwWindowShouldClose(window)) {
@@ -347,7 +378,6 @@ int main() {
 		
 		// Configure the shader
 		shadowMapShader.use();
-		shadowMapShader.setMatrix4f("lightSpaceMatrix", lightSpaceMatrix);
 		shadowMapShader.setMatrix4f("model", model);
 
 		// Culling front faces to fix Peter panning
@@ -363,7 +393,7 @@ int main() {
 
 		// Draw the cubes
 		glBindVertexArray(cubeVAO);
-		for(auto i{0}; i < 3; ++i) {
+		for(auto i{0}; i < 6; ++i) {
 			model = glm::mat4(1.0f);
 			model = glm::translate(model, cubePositions[i]);
 			model = glm::scale(model, glm::vec3(0.5f));
@@ -384,43 +414,13 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Configure the Shadow and light shader
-		shadowShader.use();
-		shadowShader.setMatrix4f("projection", projection);
-		shadowShader.setMatrix4f("view", view);
-		shadowShader.setMatrix4f("lightSpaceMatrix", lightSpaceMatrix);
-		shadowShader.setVec3f("viewPos", camera.GetPosition());
-		shadowShader.setVec3f("lightPos", lightPos);
-		model = glm::mat4(1.0f);
-		shadowShader.setMatrix4f("model", model);
-
-		// Bind the textures
-		wood.bind(GL_TEXTURE0);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, depthFB.TexId);
-
-		// Draw the plane
-		// For drawing the floor we'll disable face culling
-		glDisable(GL_CULL_FACE);
-		glBindVertexArray(planeVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		// Re-enabling face culling for the cubes
-		glEnable(GL_CULL_FACE);
-
-		// Draw the cubes
-		glBindVertexArray(cubeVAO);
-		for(auto i{0}; i < 3; ++i) {
-			model = glm::mat4(1.0f);
-			model = glm::translate(model, cubePositions[i]);
-			model = glm::scale(model, glm::vec3(0.5f));
-			shadowShader.setMatrix4f("model", model);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
+		// TODO
 
 		// Draw light object
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, lightPos);
 		model = glm::scale(model, glm::vec3(0.1f));
-		shadowShader.setMatrix4f("model", model);
+		//shadowShader.setMatrix4f("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// Debug depth map rendering

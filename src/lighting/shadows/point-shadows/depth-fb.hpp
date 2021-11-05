@@ -11,7 +11,8 @@ public:
 	std::uint32_t FBO{};
 	std::uint32_t Height{}, Width{};
 public:
-	DepthFB(std::uint32_t width, std::uint32_t height);
+	DepthFB(std::uint32_t width, std::uint32_t height, bool createTexture = true);
+	void Attach(std::uint32_t depthAttachment);
 	void Bind();
 };
 #endif
