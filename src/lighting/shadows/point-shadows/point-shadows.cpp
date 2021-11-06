@@ -284,7 +284,7 @@ int main() {
 	// Depth cubemap lightspace transforms
 	float aspect = (float)SHADOW_W/(float)SHADOW_H;
 	float near = 1.0f;
-	float far = 25.0f;
+	float far = 100.0f;
 	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, near, far);
 
 	std::vector<glm::mat4> shadowTransforms;
@@ -309,14 +309,19 @@ int main() {
 	glm::vec3 lightColor(1.0f);
 
 	// Create the shadow and light shader
-	//Shader shadowShader{ "shaders/shadow.vert", "shaders/shadow.frag" };
-	//shadowShader.use();
+	Shader shadowShader{ "shaders/shadow.vert", "shaders/shadow.frag" };
+	shadowShader.use();
 	// Texture Unit
-	//shadowShader.setVec1i("diffuseTexture", 0);
-	//shadowShader.setVec1i("shadowMap", 1);
+	shadowShader.setVec1i("diffuseTexture", 0);
+	shadowShader.setVec1i("depthMap", 1);
 
 	// Shadow map shader
 	Shader shadowMapShader{ "shaders/shadow-depth.vert", "shaders/shadow-depth.geo", "shaders/shadow-depth.frag" };
+	shadowMapShader.use();
+	for(auto i{0}; i < 6; ++i)
+		shadowMapShader.setMatrix4f("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
+	shadowMapShader.setVec1f("far_plane", far);
+	shadowMapShader.setVec3f("lightPos", lightPos);		
 
 	// Shadow map depth buffer
 	DepthFB depthFB{ 1024, 1024, false };
@@ -335,7 +340,7 @@ int main() {
 	// Enabling Depth Testing
 	glEnable(GL_DEPTH_TEST);
 	// Enabling Culling
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 
 
 	float deltaTime{};
@@ -378,18 +383,19 @@ int main() {
 		
 		// Configure the shader
 		shadowMapShader.use();
-		shadowMapShader.setMatrix4f("model", model);
 
 		// Culling front faces to fix Peter panning
-		glCullFace(GL_FRONT);
+		//glCullFace(GL_FRONT);
 
 		// Bind the depth buffer
 		depthFB.Bind();
 		glClear(GL_DEPTH_BUFFER_BIT);
 		// Draw the plane
 		wood.bind(GL_TEXTURE0);
-		glBindVertexArray(planeVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(cubeVAO);
+		model = glm::scale(model, glm::vec3(5.0f));
+		shadowMapShader.setMatrix4f("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// Draw the cubes
 		glBindVertexArray(cubeVAO);
@@ -407,20 +413,45 @@ int main() {
 		// Turn the viewport back to normal
 		glViewport(0, 0, 800, 600);
 		// Restoring the face culling option
-		glCullFace(GL_BACK);
+		//glCullFace(GL_BACK);
 
 		// CLEARS THE SCREEN
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Configure the Shadow and light shader
-		// TODO
+		shadowShader.use();
+		shadowShader.setMatrix4f("projection", projection);
+		shadowShader.setMatrix4f("view", view);
+		shadowShader.setVec3f("lightPos", lightPos);
+		shadowShader.setVec3f("viewPos", camera.GetPosition());
+		shadowShader.setVec1f("far_plane", far);
+
+		// Bind textures
+		wood.bind(GL_TEXTURE0);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
+
+		// Draw cubes
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(5.0f));
+		shadowShader.setMatrix4f("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		for(auto i{0}; i < 6; ++i) {
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, cubePositions[i]);
+			model = glm::scale(model, glm::vec3(0.5f));
+			shadowShader.setMatrix4f("model", model);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+
+
 
 		// Draw light object
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, lightPos);
 		model = glm::scale(model, glm::vec3(0.1f));
-		//shadowShader.setMatrix4f("model", model);
+		shadowShader.setMatrix4f("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// Debug depth map rendering

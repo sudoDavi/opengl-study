@@ -51,7 +51,8 @@ Shader::Shader(const std::string &vertexPath, const std::string &fragmentPath)
 
 	// Call private function verifyCompilation()
 	// it verifies the compilation of both shaders
-	verifyCompilation(vertexShaderId, fragmentShaderId);
+	if(!verifyCompilation(vertexShaderId, fragmentShaderId))
+		std::cout << vertexPath + " " + fragmentPath << std::endl;
 
 	// Attach the shaders into the Shader Program
 	glAttachShader(Id, vertexShaderId);
@@ -96,7 +97,8 @@ Shader::Shader(const std::string &vertexPath,const std::string &geometryPath, co
 
 	// Call private function verifyCompilation()
 	// it verifies the compilation of all shaders
-	verifyCompilation(vertexShaderId, geometryShaderId, fragmentShaderId);
+	if(!verifyCompilation(vertexShaderId, geometryShaderId, fragmentShaderId))
+		std::cout << vertexPath + " " + geometryPath + " " + fragmentPath << std::endl;
 
 	// Attach the shaders into the Shader Program
 	glAttachShader(Id, vertexShaderId);
