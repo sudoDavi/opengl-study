@@ -15,10 +15,15 @@ uniform mat4 projection;
 uniform mat4 view;
 uniform mat4 model;
 
+uniform bool reverse_normals;
+
 void main()
 {
 	vs_out.FragPos = vec3(model * vec4(aPos, 1.0));
-	vs_out.Normal = transpose(inverse(mat3(model))) * aNormal;
+	if(reverse_normals) // Fix shadows not lighting up inside the cube
+		vs_out.Normal = transpose(inverse(mat3(model))) * (-1.0 * aNormal);
+	else
+		vs_out.Normal = transpose(inverse(mat3(model))) * aNormal;
 	vs_out.TexCoords = aTexCoords;
 	gl_Position = projection * view * model * vec4(aPos, 1.0);
 }
