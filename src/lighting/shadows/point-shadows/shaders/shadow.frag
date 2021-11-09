@@ -16,17 +16,34 @@ uniform vec3 viewPos;
 
 uniform float far_plane;
 
+const float samples = 4.0;
+const float offset = 0.1;
+
 float ShadowCalculation(vec3 fragPos, vec3 normal, vec3 lightDir)
 {
+	float shadow = 0.0;
 	// Shadow bias
 	float bias = 0.05;
 
 	// Retrieve depth from the cubemap
 	vec3 fragToLight = fragPos - lightPos;
-	float closestDepth = texture(depthMap, fragToLight).r;
-	closestDepth *= far_plane;
 	float currentDepth = length(fragToLight);
-	float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+
+	// PCF implementation
+	for(float x = -offset; x < offset; x += offset / (samples * 0.5))
+	{
+		for(float y = -offset; y < offset; y += offset / (samples * 0.5))
+		{
+			for(float z = -offset; z < offset; z += offset / (samples * 0.5))
+			{
+				float closestDepth = texture(depthMap, fragToLight + vec3(x, y, z)).r;
+				closestDepth *= far_plane; // map to [0; far_plane]
+				if (currentDepth - bias > closestDepth)
+					shadow += 1.0;
+			}
+		}
+	}
+	shadow /= (samples * samples * samples);
 	return shadow;
 }
 
