@@ -16,34 +16,37 @@ uniform vec3 viewPos;
 
 uniform float far_plane;
 
-const float samples = 4.0;
+const int samples = 20;
 const float offset = 0.1;
+const float bias = 0.15;
+
+const vec3 sampleOffsetDirections[20] = vec3[]
+(
+	vec3( 1, 1, 1), vec3( 1, -1, 1), vec3(-1, -1, 1), vec3(-1, 1, 1),
+	vec3( 1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+	vec3( 1, 1, 0), vec3( 1, -1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0),
+	vec3( 1, 0, 1), vec3(-1, 0, 1), vec3( 1, 0, -1), vec3(-1, 0, -1),
+	vec3( 0, 1, 1), vec3( 0, -1, 1), vec3( 0, -1, -1), vec3( 0, 1, -1)
+);
 
 float ShadowCalculation(vec3 fragPos, vec3 normal, vec3 lightDir)
 {
+	float diskRadius = (1.0 + (length(viewPos - fs_in.FragPos) / far_plane)) / 25.0;
 	float shadow = 0.0;
-	// Shadow bias
-	float bias = 0.05;
 
 	// Retrieve depth from the cubemap
 	vec3 fragToLight = fragPos - lightPos;
 	float currentDepth = length(fragToLight);
 
 	// PCF implementation
-	for(float x = -offset; x < offset; x += offset / (samples * 0.5))
+	for(int i = 0; i < samples; ++i)
 	{
-		for(float y = -offset; y < offset; y += offset / (samples * 0.5))
-		{
-			for(float z = -offset; z < offset; z += offset / (samples * 0.5))
-			{
-				float closestDepth = texture(depthMap, fragToLight + vec3(x, y, z)).r;
-				closestDepth *= far_plane; // map to [0; far_plane]
-				if (currentDepth - bias > closestDepth)
-					shadow += 1.0;
-			}
-		}
+		float closestDepth = texture(depthMap, fragToLight + sampleOffsetDirections[i] * diskRadius).r;
+		closestDepth *= far_plane; // map to [0;far_plane]
+		if(currentDepth - bias > closestDepth)
+			shadow += 1.0;
 	}
-	shadow /= (samples * samples * samples);
+	shadow /= float(samples);
 	return shadow;
 }
 
