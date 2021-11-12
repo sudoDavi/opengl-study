@@ -11,6 +11,7 @@ set(
 	"multiple-lights"
 	"gamma-correction"
 	"shadows"
+	"normal-maps"
 )
 
 foreach(TUTORIAL ${TUTORIALS})
