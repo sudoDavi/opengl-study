@@ -308,11 +308,14 @@ int main() {
 		lightingShader.setVec3f("light.position", lightOffset);
 		lightingShader.setVec3f("light.ambient", lightColor * 0.2f);
 		lightingShader.setVec3f("light.diffuse", lightColor * 0.5f);
-		lightingShader.setVec3f("light.specular", lightColor * 0.2f);
+		lightingShader.setVec3f("light.specular", lightColor);
 		lightingShader.setVec3f("viewPos", camera.GetPosition());
-		lightingShader.setVec1f("material.shininess", 0.5f * 16);
+		lightingShader.setVec1f("material.shininess", 0.25f * 128);
 		lightingShader.setVec1i("material.normal", 1);
 		lightingShader.setVec1i("material.diffuse", 0);
+		lightingShader.setVec1f("light.constantAtt", 1.0f);
+		lightingShader.setVec1f("light.linearAtt", 0.09f);
+		lightingShader.setVec1f("light.quadraticAtt", 0.032f);
 		wall.bind(GL_TEXTURE0);
 		wallNormal.bind(GL_TEXTURE1);
 		
