@@ -46,14 +46,17 @@ uniform Material material;
 uniform PointLight light;
 //uniform SpotLight spotLight;
 
-in vec3 Normal;
-in vec3 FragPos;
-in vec2 TexCoords;
+in VS_OUT {
+	vec3 FragPos;
+	vec2 TexCoords;
+	mat3 TBN;
+} fs_in;
 
 out vec4 FragColor;
 
 uniform vec3 viewPos;
 
+/*
 vec3 CalcDirLight(DirectionalLight light, vec3 normal, vec3 viewDir) {
 	vec3 lightDir = normalize(-light.direction);
 
@@ -68,6 +71,7 @@ vec3 CalcDirLight(DirectionalLight light, vec3 normal, vec3 viewDir) {
 
 	return (ambient + diffuse + specular);
 }
+*/
 
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
 	vec3 lightDir = normalize(light.position - fragPos);
@@ -81,14 +85,16 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
 	float distance = length(light.position - fragPos);
 	float attenuation = 1.0 / (light.constantAtt + light.linearAtt * distance + light.quadraticAtt * (distance * distance));
 
-	vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
-	vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
+	vec3 ambient = light.ambient * vec3(texture(material.diffuse, fs_in.TexCoords));
+	vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, fs_in.TexCoords));
 	vec3 specular = light.specular * spec; // Disabled specular mapping since I want to see the full effect
 	ambient *= attenuation;
 	diffuse *= attenuation;
 	specular *= attenuation;
 	return (ambient + diffuse + specular);
 }
+
+/*
 
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
 	vec3 lightDir = normalize(light.position - FragPos);
@@ -117,14 +123,16 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
 
 	return (ambient + diffuse + specular);
 }
+*/
 
 void main() {
-	vec3 norm = texture(material.normal, TexCoords).rgb;
-	norm = normalize(norm * 2.0 - 1.0);
-	vec3 viewDir = normalize(viewPos - FragPos);
+	vec3 norm = texture(material.normal, fs_in.TexCoords).rgb;
+	norm = norm * 2.0 - 1.0;
+	norm = normalize(fs_in.TBN * norm);
+	vec3 viewDir = normalize(viewPos - fs_in.FragPos);
 
 	// phase 1 : Point Lights
-	vec3 result = CalcPointLight(light, norm, FragPos, viewDir);
+	vec3 result = CalcPointLight(light, norm, fs_in.FragPos, viewDir);
 
 	FragColor = vec4(result, 1.0);
 }
