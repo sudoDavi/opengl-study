@@ -402,7 +402,8 @@ int main() {
 		wallNormal.bind(GL_TEXTURE1);
 		
 		glm::mat4 model{glm::mat4(1.0f)};
-		model = glm::translate(model, objPosition);
+		//model = glm::translate(model, objPosition);
+		model = glm::rotate(model, currentFrame, glm::normalize(glm::vec3(1.0f, 0.0f, 1.0f)));
 		lightingShader.setMatrix4f("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
