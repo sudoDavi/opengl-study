@@ -12,6 +12,7 @@ set(
 	"gamma-correction"
 	"shadows"
 	"normal-maps"
+	"parallax-mapping"
 )
 
 foreach(TUTORIAL ${TUTORIALS})
