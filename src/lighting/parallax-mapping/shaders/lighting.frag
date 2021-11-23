@@ -107,7 +107,29 @@ void main() {
 
 vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir)
 {
-	float height = texture(material.parallax, texCoords).r;
-	vec2 p = viewDir.xy / viewDir.z * (height * height_scale);
-	return texCoords - p;
+	// number of depth layers
+	const float numLayers = 10;
+	// Calculate the size of each layer
+	float layerDepth = 1.0 / numLayers;
+	// depth of current layer
+	float currentLayerDepth = 0.0;
+	// the amount ot shift the texture coords per layer (from vector P)
+	vec2 P = viewDir.xy * height_scale;
+	vec2 deltaTexCoords = P / numLayers;
+
+	// get initial values
+	vec2 currentTexCoords = texCoords;
+	float currentDepthMapValue = texture(material.parallax, currentTexCoords).r;
+
+	while(currentLayerDepth < currentDepthMapValue)
+	{
+		// shift texture coords along direction of vector P
+		currentTexCoords -= deltaTexCoords;
+		// get depthmap value at current texture coords
+		currentDepthMapValue = texture(material.parallax, currentTexCoords).r;
+		// get depth of next layer
+		currentLayerDepth += layerDepth;
+	}
+	
+	return currentTexCoords;
 }
