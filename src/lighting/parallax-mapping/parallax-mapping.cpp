@@ -298,9 +298,9 @@ int main() {
 	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(11 * sizeof(float)));
 
 	// Load Textures
-	Texture brick{ "assets/bricks2.jpg", false, GL_CLAMP_TO_EDGE };
-	Texture brickNormal{ "assets/bricks2_normal.jpg", false, GL_CLAMP_TO_EDGE };
-	Texture brickDepth{ "assets/bricks2_disp.jpg", false, GL_CLAMP_TO_EDGE };
+	Texture wood{ "assets/wood.png", false, GL_CLAMP_TO_EDGE };
+	Texture toysNormal{ "assets/toy_box_normal.png", false, GL_CLAMP_TO_EDGE };
+	Texture toysDepth{ "assets/toy_box_disp.png", false, GL_CLAMP_TO_EDGE };
 
 	// Create the shader that's used to light up the Cube
 	Shader lightingShader{ "shaders/lighting.vert", "shaders/lighting.frag" };
@@ -401,9 +401,9 @@ int main() {
 		lightingShader.setVec1f("light.linearAtt", 0.09f);
 		lightingShader.setVec1f("light.quadraticAtt", 0.032f);
 		lightingShader.setVec1f("height_scale", 0.1f);
-		brick.bind(GL_TEXTURE0);
-		brickNormal.bind(GL_TEXTURE1);
-		brickDepth.bind(GL_TEXTURE2);
+		wood.bind(GL_TEXTURE0);
+		toysNormal.bind(GL_TEXTURE1);
+		toysDepth.bind(GL_TEXTURE2);
 		
 		glm::mat4 model{glm::mat4(1.0f)};
 		model = glm::translate(model, objPosition);
