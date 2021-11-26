@@ -13,6 +13,7 @@ set(
 	"shadows"
 	"normal-maps"
 	"parallax-mapping"
+	"hdr"
 )
 
 foreach(TUTORIAL ${TUTORIALS})
