@@ -1,14 +1,15 @@
 #include "constants.hpp"
 #include "shader.hpp"
-#define STB_IMAGE_IMPLEMENTATION
-#include "flycam.hpp"
 #include "texture.hpp"
+#include "flycam.hpp"
+#include "framebuffer.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <stb_image.h>
 
 #include <iostream>
 #include <cstdlib>
@@ -16,7 +17,6 @@
 #include <algorithm>
 #include <string>
 #include <vector>
-#include <map>
 
 
 // I know it is a global variable, but I'm just using it because I haven't implemented a Game Object yet
@@ -28,8 +28,11 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
 }
 
 void processInput(GLFWwindow *window) {
+	static bool BKeyPressed{ false };
+
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, true);	
+		glfwSetWindowShouldClose(window, true);
+
 }
 
 float getVisibility(GLFWwindow *window) {
@@ -136,134 +139,146 @@ int main() {
 	// Assign a callback function for when the screen is resized
 	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
-	// Model data
+	// CUBE vertices for the light object
 	float cubeVertices[] = {
-		// positions          // texture Coords
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+	     // back face
+            -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+             1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+             1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
+             1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+            -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+            -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
+            // front face
+            -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+             1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
+             1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+             1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+            -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
+            -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+            // left face
+            -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+            -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
+            -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+            -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+            -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+            -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+            // right face
+             1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+             1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+             1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right         
+             1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+             1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+             1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
+            // bottom face
+            -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+             1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
+             1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+             1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+            -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+            -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+            // top face
+            -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+             1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+             1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
+             1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+            -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+            -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f
 	};
 
 	float planeVertices[] = {
-		// positions          
-		//                    texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). 
-		// This will cause the floor texture to repeat)
-		 5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
-		-5.0f, -0.5f,  5.0f,  0.0f, 0.0f,
-		-5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
+        // positions            // normals         // texcoords
+         25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
+        -25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
+        -25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
 
-		 5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
-		-5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
-		 5.0f, -0.5f, -5.0f,  2.0f, 2.0f
+         25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
+        -25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
+         25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 25.0f
 	};
 
-	float transparentVertices[] = {
-		// positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
-		0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
-		0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
-		1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+        float quadVertices[] = {
+            // positions        // texture Coords
+            -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+             1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+             1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+        };
 
-		0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
-		1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
-		1.0f,  0.5f,  0.0f,  1.0f,  0.0f
+	glm::vec3 lightColors[]{ 
+		glm::vec3(200.0f),
+		glm::vec3(0.1f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 0.2f),
+		glm::vec3(0.0f, 0.0f, 0.0f)
 	};
+	glm::vec3 lightPositions[]{
+		glm::vec3(0.0f, 0.0f, 49.5f),
+		glm::vec3(-1.4f, -1.9f, 9.0f),
+		glm::vec3(0.0f, -1.8f, 4.0f),
+		glm::vec3(0.8f, -1.7f, 6.0f)
+	};
+
+	// Create a VAO for the cubes
+	unsigned int cubeVAO{};
+	glGenVertexArrays(1, &cubeVAO);
+	glBindVertexArray(cubeVAO);
+	// Create a Vertex Buffer Object for the cubes
+	unsigned int VBO;
+	glGenBuffers(1, &VBO);
+	// Bind the VBO to the array buffer
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	// Input the vertex data into the array buffer
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
+
+	// Vertex position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	// Normal Vector attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+	// UV Map attribute
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+
+
+	// Plane VAO,VBO
+	std::uint32_t planeVAO, planeVBO;
+	glGenVertexArrays(1, &planeVAO);
+	glBindVertexArray(planeVAO);
+	glGenBuffers(1, &planeVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
+
+	// Vertex position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	// Normal Vector attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+	// UV Map attribute
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+
+	// setup quad VAO
+	std::uint32_t quadVAO, quadVBO;
+        glGenVertexArrays(1, &quadVAO);
+        glGenBuffers(1, &quadVBO);
+        glBindVertexArray(quadVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+
+	// Load Textures
+	Texture wood{ "assets/wood.jpg" };
 
 	// Shaders
-	Shader shader { "shaders/basic-shader.vert", "shaders/blending.frag" };
-
-	// Textures
-	Texture grassTexture { "assets/grass.png", false, GL_CLAMP_TO_EDGE };
-	Texture containerTexture { "assets/container.jpeg", true, GL_CLAMP_TO_EDGE };
-	Texture earthTexture { "assets/earth.png", true };
-	Texture windowsTexture{ "assets/windows.png", false, GL_CLAMP_TO_EDGE };
+	Shader lightingShader{ "shaders/lighting.vert", "shaders/lighting.frag" };
+	Shader hdrShader{ "shaders/hdr-shader.vert", "shaders/hdr-shader.frag" };
+	// HDR framebuffer with Depth buffer
+	Framebuffer HDRFB{ true };
 	
-	// Object Positions
-	std::vector<glm::vec3> vegetation;
-	vegetation.push_back(glm::vec3(-1.5f, 0.0f, -0.48f));
-	vegetation.push_back(glm::vec3(1.5f, 0.0f, 4.0f));
-	vegetation.push_back(glm::vec3(-0.3f, 0.0f, 0.7f));
-	vegetation.push_back(glm::vec3(0.0f, 0.0f, 0.5f));
-	vegetation.push_back(glm::vec3(0.5f, 0.0f, -0.6f));
-
-	std::vector<glm::vec3> windows;
-	windows.push_back(glm::vec3(-1.5f, 0.0f, -0.7f));
-	windows.push_back(glm::vec3(1.5f, 0.0f, 6.0f));
-	windows.push_back(glm::vec3(-0.8f, 0.0f, 1.4f));
-	windows.push_back(glm::vec3(1.0f, 0.0f, -1.0f));
-
-	std::uint32_t quadsVBO, quadsVAO;
-	glGenVertexArrays(1, &quadsVAO);
-	glGenBuffers(1, &quadsVBO);
-	glBindVertexArray(quadsVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, quadsVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-
-	// cube VAO
-	unsigned int cubeVAO, cubeVBO;
-	glGenVertexArrays(1, &cubeVAO);
-	glGenBuffers(1, &cubeVBO);
-	glBindVertexArray(cubeVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &cubeVertices, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	// plane VAO
-	unsigned int planeVAO, planeVBO;
-	glGenVertexArrays(1, &planeVAO);
-	glGenBuffers(1, &planeVBO);
-	glBindVertexArray(planeVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), &planeVertices, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-
-		
 	// Bind a GLFW callback to change the drawing mode
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
 
@@ -273,15 +288,20 @@ int main() {
 	// Bind callback to Scroll Input
 	glfwSetScrollCallback(window, scrollHandle);
 
-	// Depth testing
-	glEnable(GL_DEPTH_TEST);
 
-	// Blending
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	// Enabling Depth Testing
+	glEnable(GL_DEPTH_TEST);
+	// Enabling Culling
+	//glEnable(GL_CULL_FACE);
+
+	// HDR Exposure
+	float exposure{ 10.0f };
+
 
 	float deltaTime{};
 	float lastFrame{ glfwGetTime() };
+
+	bool hidePointLight{ false };
 
 	// Main Rendering loop
 	while (!glfwWindowShouldClose(window)) {
@@ -292,55 +312,65 @@ int main() {
 		// Input handling
 		processInput(window);
 
-		movement(window, deltaTime, camera);
-		mouseDirection(window, camera);
+		// Update Transforms
+
+		glm::mat4 view{ glm::mat4(1.0f) };
+
+	        movement(window, deltaTime, camera);
+        	mouseDirection(window, camera);
+	        view = camera.GetLookAt();
+		
+		glm::mat4 projection{ glm::mat4(1.0f) };
+		
+		projection = glm::perspective(glm::radians(camera.Zoom()), 800.0f / 600.0f, 0.1f, 100.0f);
+		glm::mat4 model{ glm::mat4(1.0f) };
+
+		// Bind the HDR Framebuffer
+		HDRFB.Bind();
+		// Restoring the face culling option
+		//glCullFace(GL_BACK);
 
 		// CLEARS THE SCREEN
-		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// draw objects
-		shader.use();
-		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom()), 800.0f / 600.0f, 0.1f, 100.0f);
-		glm::mat4 view = camera.GetLookAt();
-		glm::mat4 model = glm::mat4(1.0f);
-		shader.setMatrix4f("projection", projection);
-		shader.setMatrix4f("view", view);
-		// cubes
+		// Configure the Lighting shader
+		lightingShader.use();
+		lightingShader.setMatrix4f("projection", projection);
+		lightingShader.setMatrix4f("view", view);
+
+		// Bind textures
+		wood.bind(GL_TEXTURE0);
+
+		// Set lighting uniforms
+		for (auto i{0}; i < 4; ++i)
+		{
+			lightingShader.setVec3f("lights[" + std::to_string(i) + "].Position", lightPositions[i]);
+			lightingShader.setVec3f("lights[" + std::to_string(i) + "].Color", lightColors[i]);
+		}
+		lightingShader.setVec3f("viewPos", camera.GetPosition());
+
+		// Render tunnel
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 25.0f));
+		model = glm::scale(model, glm::vec3(2.5f, 2.5f, 27.5f));
+		lightingShader.setMatrix4f("model", model);
+		lightingShader.setVec1b("inverse_normals", true);
 		glBindVertexArray(cubeVAO);
-		containerTexture.bind(GL_TEXTURE0);
-		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
-		shader.setMatrix4f("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-		shader.setMatrix4f("model", model);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		// floor
-		glBindVertexArray(planeVAO);
-		earthTexture.bind(GL_TEXTURE0);
-		model = glm::mat4(1.0f);
-		shader.setMatrix4f("model", model);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
 
-		// Map for distance based sorting
-		std::map<float, glm::vec3> sortedPositions;
-		// Drawing quads
-		glBindVertexArray(quadsVAO);
-		// Grass
-		grassTexture.bind(GL_TEXTURE0);
-		for (auto index{0}; index < vegetation.size(); ++index) {
-			float distance{ glm::length(camera.GetPosition() - vegetation[index]) };
-			sortedPositions[distance] = vegetation[index];
-		}
+		// Bind default framebuffer
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-		for (auto iterator = sortedPositions.rbegin(); iterator != sortedPositions.rend(); ++iterator) {
-			model = glm::mat4(1.0f);
-			model = glm::translate(model, iterator->second);
-			shader.setMatrix4f("model", model);
-			glDrawArrays(GL_TRIANGLES, 0 ,6);
-		}
-	
+		// Render the HDR Framebuffer to a quad
+		hdrShader.use();
+		hdrShader.setVec1i("exposure", exposure);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, HDRFB.GetColorBuffer());
+		glBindVertexArray(quadVAO);
+		// Draw quad
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
