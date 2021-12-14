@@ -13,7 +13,7 @@ private:
 	std::uint32_t m_glTexture{};
 public:
 	Texture() = delete;
-	Texture(const std::string& path, bool flipY = false, GLenum wrap = GL_REPEAT, int desiredChannels = 0);
+	Texture(const std::string& path, bool flipY = false, GLenum wrap = GL_REPEAT, int desiredChannels = 0, bool gammaCorrection = false);
 
 // Public member variables
 	int width{};

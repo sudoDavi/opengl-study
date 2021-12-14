@@ -208,7 +208,7 @@ int main() {
 		glm::vec3(200.0f),
 		glm::vec3(0.1f, 0.0f, 0.0f),
 		glm::vec3(0.0f, 0.0f, 0.2f),
-		glm::vec3(0.0f, 0.0f, 0.0f)
+		glm::vec3(0.0f, 0.1f, 0.0f)
 	};
 	glm::vec3 lightPositions[]{
 		glm::vec3(0.0f, 0.0f, 49.5f),
@@ -271,11 +271,20 @@ int main() {
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
 	// Load Textures
-	Texture wood{ "assets/wood.jpg" };
+	Texture wood{ "assets/wood.jpg", false, GL_REPEAT, 0, true };
 
 	// Shaders
+
 	Shader lightingShader{ "shaders/lighting.vert", "shaders/lighting.frag" };
+	// Configure lighting Shader
+	lightingShader.use();
+	lightingShader.setVec1i("diffuseTexture", 0);
+
 	Shader hdrShader{ "shaders/hdr-shader.vert", "shaders/hdr-shader.frag" };
+	// Config hdr Shader
+	hdrShader.use();
+	hdrShader.setVec1i("hdrBuffer", 0);
+
 	// HDR framebuffer with Depth buffer
 	Framebuffer HDRFB{ true };
 	
@@ -295,7 +304,7 @@ int main() {
 	//glEnable(GL_CULL_FACE);
 
 	// HDR Exposure
-	float exposure{ 10.0f };
+	float exposure{ 1.0f };
 
 
 	float deltaTime{};
@@ -362,9 +371,12 @@ int main() {
 		// Bind default framebuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+		// Clear Default Buffer
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 		// Render the HDR Framebuffer to a quad
 		hdrShader.use();
-		hdrShader.setVec1i("exposure", exposure);
+		hdrShader.setVec1f("exposure", exposure);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, HDRFB.GetColorBuffer());
 		glBindVertexArray(quadVAO);
