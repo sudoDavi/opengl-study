@@ -23,16 +23,37 @@
 // and it's just so I can use the scrool for the zoom
 FlyCam camera{ glm::vec3(0.0f, 0.0f, 3.0f) };
 
+// HDR Exposure
+float exposure{ 1.0f };
+// HDR Enable
+bool EnableHDR{ true };
+
+
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
 void processInput(GLFWwindow *window) {
-	static bool BKeyPressed{ false };
+	static bool HDRKeyPressed{ false };
 
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
+	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
+		exposure += 0.001f;
+		std::cout << "exposure: " << exposure << std::endl;
+	}
+	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {	
+		exposure -= 0.001f;
+		std::cout << "exposure: " << exposure << std::endl;
+	}
+	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS && !HDRKeyPressed) {
+		HDRKeyPressed = true;
+		EnableHDR = !EnableHDR;
+		std::cout << "HDR: " << EnableHDR << std::endl;
+	}
+	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_RELEASE)
+		HDRKeyPressed = false;
 }
 
 float getVisibility(GLFWwindow *window) {
@@ -303,9 +324,6 @@ int main() {
 	// Enabling Culling
 	//glEnable(GL_CULL_FACE);
 
-	// HDR Exposure
-	float exposure{ 1.0f };
-
 
 	float deltaTime{};
 	float lastFrame{ glfwGetTime() };
@@ -377,6 +395,7 @@ int main() {
 		// Render the HDR Framebuffer to a quad
 		hdrShader.use();
 		hdrShader.setVec1f("exposure", exposure);
+		hdrShader.setVec1b("hdr", EnableHDR);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, HDRFB.GetColorBuffer());
 		glBindVertexArray(quadVAO);
