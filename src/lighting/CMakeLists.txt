@@ -14,6 +14,7 @@ set(
 	"normal-maps"
 	"parallax-mapping"
 	"hdr"
+	"bloom"
 )
 
 foreach(TUTORIAL ${TUTORIALS})
