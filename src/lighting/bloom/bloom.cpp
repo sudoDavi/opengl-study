@@ -40,11 +40,11 @@ void processInput(GLFWwindow *window) {
 		glfwSetWindowShouldClose(window, true);
 
 	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
-		exposure += 0.001f;
+		exposure += 0.005f;
 		std::cout << "exposure: " << exposure << std::endl;
 	}
 	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {	
-		exposure -= 0.001f;
+		exposure -= 0.005f;
 		std::cout << "exposure: " << exposure << std::endl;
 	}
 	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS && !HDRKeyPressed) {
@@ -59,9 +59,9 @@ void processInput(GLFWwindow *window) {
 float getVisibility(GLFWwindow *window) {
 	static float visibility{ 0.2f };
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-		visibility += 0.05f;
+		visibility += 0.25f;
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-		visibility -= 0.05f;
+		visibility -= 0.25f;
 
 	return visibility;
 }
@@ -225,6 +225,20 @@ int main() {
              1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
         };
 
+	glm::vec3 lightColors[]{ 
+		glm::vec3(200.0f),
+		glm::vec3(0.1f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 0.2f),
+		glm::vec3(0.0f, 0.1f, 0.0f)
+	};
+	glm::vec3 lightPositions[]{
+		glm::vec3(0.0f, 0.0f, 49.5f),
+		glm::vec3(-1.4f, -1.9f, 9.0f),
+		glm::vec3(0.0f, -1.8f, 4.0f),
+		glm::vec3(0.8f, -1.7f, 6.0f)
+	};
+
+
 	// Create a VAO for the cubes
 	unsigned int cubeVAO{};
 	glGenVertexArrays(1, &cubeVAO);
@@ -278,9 +292,22 @@ int main() {
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
-	// Load Textures
+	// Textures
+	Texture wood{ "assets/wood.jpg", false, GL_REPEAT, 0, true };
 
 	// Shaders
+	Shader lightingShader{ "shaders/lighting.vert", "shaders/lighting.frag" };
+	// Configure lighting Shader
+	lightingShader.use();
+	lightingShader.setVec1i("diffuseTexture", 0);
+
+	Shader hdrShader{ "shaders/hdr-shader.vert", "shaders/hdr-shader.frag" };
+	// Config hdr Shader
+	hdrShader.use();
+	hdrShader.setVec1i("hdrBuffer", 0);
+	// Framebuffers
+	// HDR Framebuffer with Depth buffer
+	Framebuffer fb{ true };
 	
 	// Bind a GLFW callback to change the drawing mode
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
@@ -324,13 +351,56 @@ int main() {
 		
 		projection = glm::perspective(glm::radians(camera.Zoom()), 800.0f / 600.0f, 0.1f, 100.0f);
 		glm::mat4 model{ glm::mat4(1.0f) };
-	
+
+		// Bind the HDR Framebuffer
+		fb.Bind();
+		// Restoring the face culling option
+		//glCullFace(GL_BACK);
+
 		// CLEARS THE SCREEN
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// TODO: Add Bloom example code
+		// Configure the Lighting shader
+		lightingShader.use();
+		lightingShader.setMatrix4f("projection", projection);
+		lightingShader.setMatrix4f("view", view);
 
+		// Bind textures
+		wood.bind(GL_TEXTURE0);
+
+		// Set lighting uniforms
+		for (auto i{0}; i < 4; ++i)
+		{
+			lightingShader.setVec3f("lights[" + std::to_string(i) + "].Position", lightPositions[i]);
+			lightingShader.setVec3f("lights[" + std::to_string(i) + "].Color", lightColors[i]);
+		}
+		lightingShader.setVec3f("viewPos", camera.GetPosition());
+
+		// Render tunnel
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 25.0f));
+		model = glm::scale(model, glm::vec3(2.5f, 2.5f, 27.5f));
+		lightingShader.setMatrix4f("model", model);
+		lightingShader.setVec1b("inverse_normals", true);
+		glBindVertexArray(cubeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Bind default framebuffer
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		// Clear Default Buffer
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// Render the HDR Framebuffer to a quad
+		hdrShader.use();
+		hdrShader.setVec1f("exposure", exposure);
+		hdrShader.setVec1b("hdr", EnableHDR);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, fb.GetColorBuffer());
+		glBindVertexArray(quadVAO);
+		// Draw quad
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

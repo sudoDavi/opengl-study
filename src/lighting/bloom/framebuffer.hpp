@@ -8,7 +8,6 @@
 #include <iostream>
 
 
-
 class Framebuffer {
 public:
 	enum class AttachTyp {
@@ -21,18 +20,21 @@ private:
 		Color,
 		Depth,
 		Stencil,
-		DepthStencil
+		DepthStencil,
 	};
 
 private:
 	std::uint32_t m_colorBuffer{};
+	std::uint32_t m_colorBuffer1{};
 	std::uint32_t m_depthBuffer;
 	std::uint32_t m_stencilBuffer;
 	bool m_combinedBuffers{ false };
 
 private:
 	void CreateBuffer(BufferType type);
+	void CreateBuffer(BufferType type, uint32_t* colorBuffer_p);
 	void AttachBuffer(BufferType type);
+	void AttachBuffer(BufferType type, uint32_t colorBuffer, GLenum colorAttachment);
 
 public:
 	std::uint32_t Id{};
