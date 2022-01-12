@@ -267,7 +267,12 @@ void Framebuffer::Bind(GLenum target) const {
 	glBindFramebuffer(target, Id);
 }
 
-const std::uint32_t Framebuffer::GetColorBuffer() const {
-	return m_colorBuffer;
+const std::uint32_t Framebuffer::GetColorBuffer(std::uint32_t colorAttachmentNum) const {
+	if (colorAttachmentNum == 0)
+		return m_colorBuffer;
+	else if(colorAttachmentNum == 1)
+		return m_colorBuffer1;
+	else
+		return m_colorBuffer;
 }
 

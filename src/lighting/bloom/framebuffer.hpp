@@ -45,7 +45,7 @@ public:
 	
 	void Bind(GLenum target = GL_FRAMEBUFFER) const;
 
-	const std::uint32_t GetColorBuffer() const;
+	const std::uint32_t GetColorBuffer(std::uint32_t colorAttachmentNum) const;
 };
 
 #endif

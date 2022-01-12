@@ -227,9 +227,9 @@ int main() {
 
 	glm::vec3 lightColors[]{ 
 		glm::vec3(200.0f),
-		glm::vec3(0.1f, 0.0f, 0.0f),
-		glm::vec3(0.0f, 0.0f, 0.2f),
-		glm::vec3(0.0f, 0.1f, 0.0f)
+		glm::vec3(10.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 1.0f),
+		glm::vec3(0.0f, 0.5f, 0.0f)
 	};
 	glm::vec3 lightPositions[]{
 		glm::vec3(0.0f, 0.0f, 49.5f),
@@ -397,7 +397,7 @@ int main() {
 		hdrShader.setVec1f("exposure", exposure);
 		hdrShader.setVec1b("hdr", EnableHDR);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, fb.GetColorBuffer());
+		glBindTexture(GL_TEXTURE_2D, fb.GetColorBuffer(1));
 		glBindVertexArray(quadVAO);
 		// Draw quad
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
