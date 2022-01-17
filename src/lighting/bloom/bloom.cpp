@@ -301,13 +301,20 @@ int main() {
 	lightingShader.use();
 	lightingShader.setVec1i("diffuseTexture", 0);
 
-	Shader hdrShader{ "shaders/hdr-shader.vert", "shaders/hdr-shader.frag" };
+	Shader hdrShader{ "shaders/quad-shader.vert", "shaders/hdr-shader.frag" };
 	// Config hdr Shader
 	hdrShader.use();
 	hdrShader.setVec1i("hdrBuffer", 0);
+
+	Shader blurShader{ "shaders/quad-shader.vert", "shaders/blur-shader.frag" };
+	// Config blur shader
+	blurShader.use();
+	blurShader.setVec1i("image", 0);
+
 	// Framebuffers
 	// HDR Framebuffer with Depth buffer
 	Framebuffer fb{ true };
+	Framebuffer pingPongFB[] {};
 	
 	// Bind a GLFW callback to change the drawing mode
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
@@ -385,6 +392,25 @@ int main() {
 		lightingShader.setVec1b("inverse_normals", true);
 		glBindVertexArray(cubeVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Apply blur
+		bool horizontal{ true }, first_iteration{ true };
+		uint32_t amount{ 10 };
+		blurShader.use();
+		for (auto i{0}; i < amount; ++i)
+		{
+			pingPongFB[horizontal].Bind();
+			blurShader.setVec1b("horizontal", horizontal);
+			glBindTexture(
+				GL_TEXTURE_2D, first_iteration ? fb.GetColorBuffer(1) : pingPongFB[!horizontal].GetColorBuffer(0)
+			);
+			glBindVertexArray(quadVAO);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+			horizontal = !horizontal;
+			if (first_iteration)
+				first_iteration = false;
+		}
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		// Bind default framebuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
