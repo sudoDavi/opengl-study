@@ -301,10 +301,11 @@ int main() {
 	lightingShader.use();
 	lightingShader.setVec1i("diffuseTexture", 0);
 
-	Shader hdrShader{ "shaders/quad-shader.vert", "shaders/hdr-shader.frag" };
+	Shader hdrBloomShader{ "shaders/quad-shader.vert", "shaders/bloom-shader.frag" };
 	// Config hdr Shader
-	hdrShader.use();
-	hdrShader.setVec1i("hdrBuffer", 0);
+	hdrBloomShader.use();
+	hdrBloomShader.setVec1i("scene", 0);
+	hdrBloomShader.setVec1i("bloomBlur", 1);
 
 	Shader blurShader{ "shaders/quad-shader.vert", "shaders/blur-shader.frag" };
 	// Config blur shader
@@ -314,7 +315,7 @@ int main() {
 	// Framebuffers
 	// HDR Framebuffer with Depth buffer
 	Framebuffer fb{ true };
-	Framebuffer pingPongFB[] {};
+	Framebuffer pingPongFB[2] {};
 	
 	// Bind a GLFW callback to change the drawing mode
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
@@ -419,11 +420,13 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Render the HDR Framebuffer to a quad
-		hdrShader.use();
-		hdrShader.setVec1f("exposure", exposure);
-		hdrShader.setVec1b("hdr", EnableHDR);
+		hdrBloomShader.use();
+		hdrBloomShader.setVec1f("exposure", exposure);
+		hdrBloomShader.setVec1b("hdr", EnableHDR);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, fb.GetColorBuffer(1));
+		glBindTexture(GL_TEXTURE_2D, fb.GetColorBuffer(0));
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, pingPongFB[!horizontal].GetColorBuffer(0));
 		glBindVertexArray(quadVAO);
 		// Draw quad
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
