@@ -226,16 +226,24 @@ int main() {
         };
 
 	glm::vec3 lightColors[]{ 
-		glm::vec3(200.0f),
+		glm::vec3(100.0f),
 		glm::vec3(10.0f, 0.0f, 0.0f),
-		glm::vec3(0.0f, 0.0f, 1.0f),
-		glm::vec3(0.0f, 0.5f, 0.0f)
+		glm::vec3(0.0f, 0.0f, 15.0f),
+		glm::vec3(0.0f, 20.5f, 0.0f)
 	};
 	glm::vec3 lightPositions[]{
-		glm::vec3(0.0f, 0.0f, 49.5f),
-		glm::vec3(-1.4f, -1.9f, 9.0f),
-		glm::vec3(0.0f, -1.8f, 4.0f),
-		glm::vec3(0.8f, -1.7f, 6.0f)
+		glm::vec3(0.0f, 0.0f, 2.5f),
+		glm::vec3(-1.4f, 1.9f, 9.0f),
+		glm::vec3(0.0f, 1.8f, 4.0f),
+		glm::vec3(0.8f, 1.7f, 6.0f)
+	};
+
+	glm::vec3 cubePositions[]{ 
+		glm::vec3( 0.0f, 1.5f, 0.0f),
+		glm::vec3(2.0f, 1.0f, 1.0f),
+		glm::vec3(-1.0f, 1.0f, 2.0f),
+		glm::vec3(2.1f, 1.0f, 5.0f),
+		glm::vec3(0.5f, 1.0f, -2.0f)
 	};
 
 
@@ -294,6 +302,7 @@ int main() {
 
 	// Textures
 	Texture wood{ "assets/wood.jpg", false, GL_REPEAT, 0, true };
+	Texture container{ "assets/container2.png", false, GL_REPEAT, 0, true};
 
 	// Shaders
 	Shader lightingShader{ "shaders/lighting.vert", "shaders/lighting.frag" };
@@ -385,14 +394,25 @@ int main() {
 		}
 		lightingShader.setVec3f("viewPos", camera.GetPosition());
 
-		// Render tunnel
+		// Draw the plane
+		// For drawing the floor we'll disable face culling
+		glDisable(GL_CULL_FACE);
+		glBindVertexArray(planeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		// Render boxes
+		container.bind(GL_TEXTURE0);
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 25.0f));
-		model = glm::scale(model, glm::vec3(2.5f, 2.5f, 27.5f));
-		lightingShader.setMatrix4f("model", model);
-		lightingShader.setVec1b("inverse_normals", true);
+		model = glm::scale(model, glm::vec3(1.0f));
 		glBindVertexArray(cubeVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		for(auto i{0}; i < 5; ++i) {
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, cubePositions[i]);
+			model = glm::scale(model, glm::vec3(0.5f));
+			lightingShader.setMatrix4f("model", model);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 
 		// Apply blur
 		bool horizontal{ true }, first_iteration{ true };
