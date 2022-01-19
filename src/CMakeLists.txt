@@ -20,6 +20,7 @@ set(
 	"geometry-shaders"
 	"instancing"
 	"anti-aliasing"
+	"deferred-shading"
 )
 
 foreach(TUTORIAL ${TUTORIALS})
