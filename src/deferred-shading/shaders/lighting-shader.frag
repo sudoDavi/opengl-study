@@ -22,7 +22,7 @@ void main()
 	vec3 FragPos = texture(gPosition, TexCoords).rgb;
 	vec3 Normal = texture(gNormal, TexCoords).rgb;
 	vec3 Albedo = texture(gAlbedoSpec, TexCoords).rgb;
-	float Specular = texture(gAlbedoSpec, TexCoords).rgb;
+	float Specular = texture(gAlbedoSpec, TexCoords).r;
 
 	// then calculate lighting
 	vec3 lighting = Albedo * 0.1; // hard-coded ambient light component

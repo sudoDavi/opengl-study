@@ -2,6 +2,7 @@
 #include "shader.hpp"
 #include "texture.hpp"
 #include "flycam.hpp"
+#include "model.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -179,8 +180,16 @@ int main() {
 	};
 	
 	// Position for the object
-	glm::vec3 objPosition(0.0f, 0.0f, 0.0f);
-
+	std::vector<glm::vec3> objectPositions;
+	objectPositions.push_back(glm::vec3(-3.0,  -0.5, -3.0));
+	objectPositions.push_back(glm::vec3( 0.0,  -0.5, -3.0));
+	objectPositions.push_back(glm::vec3( 3.0,  -0.5, -3.0));
+	objectPositions.push_back(glm::vec3(-3.0,  -0.5,  0.0));
+	objectPositions.push_back(glm::vec3( 0.0,  -0.5,  0.0));
+	objectPositions.push_back(glm::vec3( 3.0,  -0.5,  0.0));
+	objectPositions.push_back(glm::vec3(-3.0,  -0.5,  3.0));
+	objectPositions.push_back(glm::vec3( 0.0,  -0.5,  3.0));
+	objectPositions.push_back(glm::vec3( 3.0,  -0.5,  3.0));
 
 	// Creating a Vertex Array Object
 	unsigned int VAO{};
@@ -248,12 +257,37 @@ int main() {
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "ERROR::FRAMEBUFFER::NOT_COMPLETE\n";
 
+	// Load models
+	stbi_set_flip_vertically_on_load(true);
+	Model backpack{ "assets/backpack/backpack.obj" };
 
+	// Light data
+	const unsigned int NR_LIGHTS = 32;
+	std::vector<glm::vec3> lightPositions;
+	std::vector<glm::vec3> lightColors;
+	srand(13);
+	for (unsigned int i = 0; i < NR_LIGHTS; i++)
+	{
+		// calculate slightly random offsets
+		float xPos = static_cast<float>(((rand() % 100) / 100.0) * 6.0 - 3.0);
+		float yPos = static_cast<float>(((rand() % 100) / 100.0) * 6.0 - 4.0);
+		float zPos = static_cast<float>(((rand() % 100) / 100.0) * 6.0 - 3.0);
+		lightPositions.push_back(glm::vec3(xPos, yPos, zPos));
+		// also calculate random color
+		float rColor = static_cast<float>(((rand() % 100) / 200.0f) + 0.5); // between 0.5 and 1.0
+		float gColor = static_cast<float>(((rand() % 100) / 200.0f) + 0.5); // between 0.5 and 1.0
+		float bColor = static_cast<float>(((rand() % 100) / 200.0f) + 0.5); // between 0.5 and 1.0
+		lightColors.push_back(glm::vec3(rColor, gColor, bColor));
+	}
+
+	// Shaders
+	Shader geometryPassShader{ "shaders/gbuffer-shader.vert", "shaders/gbuffer-shader.frag" };
+	Shader lightingPassShader{ "shaders/lighting-shader.vert", "shaders/lighting-shader.frag" };
+
+	lightingPassShader.setVec1i("gPosition", 0);
+	lightingPassShader.setVec1i("gNormal", 1);
+	lightingPassShader.setVec1i("gAlbedoSpec", 2);
 	
-	// Load Textures
-
-	// Create the shader that's used to light up the Cube
-
 	
 	// Bind a GLFW callback to change the drawing mode
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);

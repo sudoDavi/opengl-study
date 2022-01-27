@@ -18,4 +18,4 @@ file(COPY ${ASSETS_DIR} DESTINATION "${PROJECT_BINARY_DIR}")
 add_executable(Deferred_Shading ${CXX_FILES})
 
 target_compile_options(Deferred_Shading PUBLIC -ggdb)
-target_link_libraries(Deferred_Shading PUBLIC glad glfw glm stb_image)
+target_link_libraries(Deferred_Shading PUBLIC glad glfw glm stb_image assimp)
