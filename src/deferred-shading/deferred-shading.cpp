@@ -236,6 +236,7 @@ int main() {
 	Shader geometryPassShader{ "shaders/gbuffer-shader.vert", "shaders/gbuffer-shader.frag" };
 	Shader lightingPassShader{ "shaders/lighting-shader.vert", "shaders/lighting-shader.frag" };
 
+	lightingPassShader.use();
 	lightingPassShader.setVec1i("gPosition", 0);
 	lightingPassShader.setVec1i("gNormal", 1);
 	lightingPassShader.setVec1i("gAlbedoSpec", 2);
