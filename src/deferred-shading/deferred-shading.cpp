@@ -153,6 +153,67 @@ int main() {
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
+	float vertices[] = {
+		// back face
+		-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+		1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+		1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
+		1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+		-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+		-1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
+		// front face
+		-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+		1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
+		1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+		1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+		-1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
+		-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+		// left face
+		-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+		-1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
+		-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+		-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+		-1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+		-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+		// right face
+		1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+		1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+		1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right         
+		1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+		1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+		1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
+		// bottom face
+		-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+		1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
+		1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+		1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+		-1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+		-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+		// top face
+		-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+		1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+		1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
+		1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+		-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+		-1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
+	};
+	uint32_t cubeVAO, cubeVBO;
+	glGenVertexArrays(1, &cubeVAO);
+	glGenBuffers(1, &cubeVBO);
+	// fill buffer
+	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	// link vertex attributes
+	glBindVertexArray(cubeVAO);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
 
 	
 	// Position for the object
@@ -217,7 +278,7 @@ int main() {
 	const unsigned int NR_LIGHTS = 32;
 	std::vector<glm::vec3> lightPositions;
 	std::vector<glm::vec3> lightColors;
-	srand(13);
+	srand(glfwGetTime());
 	for (unsigned int i = 0; i < NR_LIGHTS; i++)
 	{
 		// calculate slightly random offsets
@@ -226,15 +287,16 @@ int main() {
 		float zPos = static_cast<float>(((rand() % 100) / 100.0) * 6.0 - 3.0);
 		lightPositions.push_back(glm::vec3(xPos, yPos, zPos));
 		// also calculate random color
-		float rColor = static_cast<float>(((rand() % 100) / 200.0f) + 0.5); // between 0.5 and 1.0
-		float gColor = static_cast<float>(((rand() % 100) / 200.0f) + 0.5); // between 0.5 and 1.0
-		float bColor = static_cast<float>(((rand() % 100) / 200.0f) + 0.5); // between 0.5 and 1.0
+		float rColor = static_cast<float>(((rand() % 100) / 200.0f) + 0.1); // between 0.5 and 1.0
+		float gColor = static_cast<float>(((rand() % 100) / 200.0f) + 0.1); // between 0.5 and 1.0
+		float bColor = static_cast<float>(((rand() % 100) / 200.0f) + 0.1); // between 0.5 and 1.0
 		lightColors.push_back(glm::vec3(rColor, gColor, bColor));
 	}
 
 	// Shaders
 	Shader geometryPassShader{ "shaders/gbuffer-shader.vert", "shaders/gbuffer-shader.frag" };
 	Shader lightingPassShader{ "shaders/lighting-shader.vert", "shaders/lighting-shader.frag" };
+	Shader lightBoxShader{ "shaders/lightbox-shader.vert", "shaders/lightbox-shader.frag" };
 
 	lightingPassShader.use();
 	lightingPassShader.setVec1i("gPosition", 0);
@@ -313,7 +375,7 @@ int main() {
 
 		lightingPassShader.use();
 		// Send light info to the shader
-		for (auto i = 0; i < lightPositions.size(); i++)
+		for (auto i{0}; i < lightPositions.size(); ++i)
 		{
 			lightingPassShader.setVec3f("lights[" + std::to_string(i) + "].Position", lightPositions[i]);
 			lightingPassShader.setVec3f("lights[" + std::to_string(i) + "].Color", lightColors[i]);
@@ -326,6 +388,32 @@ int main() {
 		lightingPassShader.setVec3f("viewPos", camera.GetPosition());
 		glBindVertexArray(quadVAO);
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+		// Now to do forward rendering on the light boxes
+		// We first need to copy the depth information from the geometry pass (so we don't draw the boxes over everything)
+		// to the default framebuffer
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		glBlitFramebuffer(
+			0, 0, 800, 600, 0, 0, 800, 600, GL_DEPTH_BUFFER_BIT, GL_NEAREST
+		);// copy the contents of the read to the DRAW buffer
+		glBindFramebuffer(GL_FRAMEBUFFER, 0); // Restore the default framebuffer
+
+		// Now we draw the boxes
+		glBindVertexArray(cubeVAO);
+		lightBoxShader.use();
+		lightBoxShader.setMatrix4f("projection", projection);
+		lightBoxShader.setMatrix4f("view", view);
+		for (auto i{0}; i < lightPositions.size(); ++i)
+		{
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, lightPositions[i]);
+			model = glm::scale(model, glm::vec3(0.05f));
+			lightBoxShader.setMatrix4f("model", model);
+			lightBoxShader.setVec3f("LightColor", lightColors[i]);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
